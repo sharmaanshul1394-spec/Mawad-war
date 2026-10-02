@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-
 <title>Chittorgarh Battle Royale</title>
 
 <style>
@@ -39,27 +38,20 @@ button{
   align-items:center;
   justify-content:center;
   color:white;
-  background:
-    linear-gradient(rgba(25,18,10,.62),rgba(0,0,0,.94));
+  background:linear-gradient(#20170dcc,#000f);
 }
 
 #menuBox{
   width:min(92%,410px);
   padding:25px;
   border-radius:22px;
-  background:rgba(20,20,20,.95);
-  border:1px solid #ffffff22;
+  background:#171717f5;
   text-align:center;
   box-shadow:0 20px 60px #000;
 }
 
 #menuBox h1{
   margin:0 0 8px;
-  font-size:30px;
-}
-
-#menuBox p{
-  color:#ccc;
 }
 
 .modeButton,
@@ -70,23 +62,21 @@ button{
   border:0;
   border-radius:13px;
   color:white;
-  font-weight:bold;
   background:#795126;
+  font-weight:bold;
 }
 
 .modeButton.selected{
   background:#b9782d;
-  box-shadow:0 0 0 2px #fff7;
+  box-shadow:0 0 0 2px #fff8;
 }
 
 #readyButton{
-  margin-top:15px;
   background:#1877d2;
 }
 
 #roomInfo{
-  margin-top:15px;
-  min-height:58px;
+  margin:15px 0;
   line-height:1.6;
   color:#ddd;
 }
@@ -110,7 +100,7 @@ button{
 
 #status{
   position:absolute;
-  top:36px;
+  top:37px;
   left:10px;
   font-size:13px;
   text-shadow:0 2px 5px #000;
@@ -118,7 +108,7 @@ button{
 
 #team{
   position:absolute;
-  top:57px;
+  top:58px;
   left:10px;
   font-weight:bold;
   text-shadow:0 2px 5px #000;
@@ -132,10 +122,6 @@ button{
   text-shadow:0 2px 5px #000;
 }
 
-#weaponName{
-  font-size:14px;
-}
-
 #ammo{
   font-size:24px;
   font-weight:bold;
@@ -147,7 +133,7 @@ button{
   bottom:18px;
   padding:9px 13px;
   border-radius:10px;
-  background:#000b;
+  background:#000c;
   font-weight:bold;
 }
 
@@ -155,8 +141,8 @@ button{
   position:absolute;
   left:50%;
   top:50%;
-  width:26px;
-  height:26px;
+  width:25px;
+  height:25px;
   transform:translate(-50%,-50%);
 }
 
@@ -190,7 +176,7 @@ button{
   height:120px;
   border:2px solid #ffffff44;
   border-radius:50%;
-  background:#ffffff0d;
+  background:#ffffff10;
   pointer-events:auto;
 }
 
@@ -202,7 +188,6 @@ button{
   height:50px;
   border-radius:50%;
   background:#ffffffbb;
-  box-shadow:0 3px 12px #0008;
 }
 
 .action{
@@ -215,16 +200,15 @@ button{
   color:white;
   font-weight:bold;
   pointer-events:auto;
-  background:#222b;
+  background:#222c;
 }
 
 #fire{
-  right:18px;
   bottom:22px;
   width:92px;
   height:92px;
   border-radius:50%;
-  background:#c02626dd;
+  background:#c52626dd;
 }
 
 #reload{
@@ -246,24 +230,25 @@ button{
   font-weight:bold;
   text-shadow:0 3px 10px #000;
   display:none;
+  pointer-events:auto;
 }
 
 #message button{
   margin-top:18px;
   padding:12px 22px;
   border:0;
-  border-radius:11px;
-  color:white;
+  border-radius:10px;
   background:#1877d2;
+  color:white;
   font-weight:bold;
 }
 
 #damageFlash{
   position:absolute;
   inset:0;
-  background:rgba(255,0,0,.24);
+  background:#f00;
   opacity:0;
-  transition:opacity .08s;
+  pointer-events:none;
 }
 </style>
 </head>
@@ -271,12 +256,10 @@ button{
 <body>
 
 <div id="menu">
-
   <div id="menuBox">
 
     <h1>🏰 Chittorgarh</h1>
-
-    <p>Online Fort Battle</p>
+    <p>Fort Battle Online</p>
 
     <button class="modeButton" data-mode="1v1">
       ⚔️ 1 VS 1
@@ -296,33 +279,19 @@ button{
     </button>
 
   </div>
-
 </div>
 
 <div id="hud">
 
-  <div id="title">
-    🏰 CHITTORGARH FORT
-  </div>
+  <div id="title">🏰 CHITTORGARH FORT</div>
 
-  <div id="status">
-    Waiting...
-  </div>
+  <div id="status">Waiting...</div>
 
-  <div id="team">
-    Team: -
-  </div>
+  <div id="team">Team: -</div>
 
   <div id="weapon">
-
-    <div id="weaponName">
-      Pistol
-    </div>
-
-    <div id="ammo">
-      12 / 60
-    </div>
-
+    <div id="weaponName">Pistol</div>
+    <div id="ammo">12 / 60</div>
   </div>
 
   <div id="health">
@@ -335,20 +304,11 @@ button{
     <div id="stick"></div>
   </div>
 
-  <button id="fire" class="action">
-    FIRE
-  </button>
-
-  <button id="reload" class="action">
-    RELOAD
-  </button>
-
-  <button id="switch" class="action">
-    SWITCH
-  </button>
+  <button id="fire" class="action">FIRE</button>
+  <button id="reload" class="action">RELOAD</button>
+  <button id="switch" class="action">SWITCH</button>
 
   <div id="damageFlash"></div>
-
   <div id="message"></div>
 
 </div>
@@ -361,14 +321,10 @@ import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
 /* =====================================================
-   SOCKET
+   SOCKET / STATE
 ===================================================== */
 
 const socket = io();
-
-/* =====================================================
-   STATE
-===================================================== */
 
 let myId = null;
 let myTeam = null;
@@ -379,1248 +335,17 @@ let myHP = 100;
 
 const players = new Map();
 
+const collisionObjects = [];
+
+const doors = [];
+
 /* =====================================================
    UI
 ===================================================== */
 
-const menu =
-document.getElementById("menu");
-
-const hud =
-document.getElementById("hud");
-
-const roomInfo =
-document.getElementById("roomInfo");
-
-const readyButton =
-document.getElementById("readyButton");
-
-const statusText =
-document.getElementById("status");
-
-const teamText =
-document.getElementById("team");
-
-const weaponName =
-document.getElementById("weaponName");
-
-const ammoText =
-document.getElementById("ammo");
-
-const hpText =
-document.getElementById("hp");
-
-const damageFlash =
-document.getElementById("damageFlash");
-
-/* =====================================================
-   MODE
-===================================================== */
-
-document
-.querySelectorAll(".modeButton")
-.forEach(button => {
-
-  button.addEventListener("click", () => {
-
-    document
-    .querySelectorAll(".modeButton")
-    .forEach(b =>
-      b.classList.remove("selected")
-    );
-
-    button.classList.add("selected");
-
-    selectedMode =
-      button.dataset.mode;
-
-    ready = false;
-
-    readyButton.textContent =
-      "READY";
-
-    socket.emit(
-      "selectMode",
-      selectedMode
-    );
-
-    roomInfo.innerHTML =
-      `Mode: <b>${selectedMode}</b><br>
-       Joining room...`;
-
-  });
-
-});
-
-/* =====================================================
-   READY
-===================================================== */
-
-readyButton.addEventListener(
-  "click",
-  () => {
-
-    if(!selectedMode){
-
-      roomInfo.innerHTML =
-        "⚠️ Pehle mode select karo.";
-
-      return;
-
-    }
-
-    ready = !ready;
-
-    socket.emit(
-      "ready",
-      ready
-    );
-
-    readyButton.textContent =
-      ready
-      ? "CANCEL READY"
-      : "READY";
-
-  }
-);
-
-/* =====================================================
-   THREE SCENE
-===================================================== */
-
-const scene =
-new THREE.Scene();
-
-scene.background =
-new THREE.Color(0x91a9b5);
-
-scene.fog =
-new THREE.Fog(
-  0x91a9b5,
-  85,
-  210
-);
-
-/* =====================================================
-   CAMERA
-===================================================== */
-
-const camera =
-new THREE.PerspectiveCamera(
-  65,
-  innerWidth / innerHeight,
-  .1,
-  350
-);
-
-camera.position.set(
-  0,
-  7,
-  15
-);
-
-/* =====================================================
-   RENDERER
-===================================================== */
-
-const renderer =
-new THREE.WebGLRenderer({
-  antialias:true
-});
-
-renderer.setSize(
-  innerWidth,
-  innerHeight
-);
-
-renderer.setPixelRatio(
-  Math.min(
-    devicePixelRatio,
-    2
-  )
-);
-
-renderer.shadowMap.enabled =
-true;
-
-renderer.shadowMap.type =
-THREE.PCFSoftShadowMap;
-
-renderer.outputColorSpace =
-THREE.SRGBColorSpace;
-
-document.body.appendChild(
-  renderer.domElement
-);
-
-/* =====================================================
-   LIGHTING
-===================================================== */
-
-const hemi =
-new THREE.HemisphereLight(
-  0xfff1d0,
-  0x514333,
-  2.1
-);
-
-scene.add(hemi);
-
-const sun =
-new THREE.DirectionalLight(
-  0xffe1a3,
-  3.5
-);
-
-sun.position.set(
-  -50,
-  100,
-  45
-);
-
-sun.castShadow = true;
-
-sun.shadow.mapSize.width =
-2048;
-
-sun.shadow.mapSize.height =
-2048;
-
-sun.shadow.camera.left =
--100;
-
-sun.shadow.camera.right =
-100;
-
-sun.shadow.camera.top =
-100;
-
-sun.shadow.camera.bottom =
--100;
-
-scene.add(sun);
-
-/* =====================================================
-   MATERIALS
-===================================================== */
-
-const groundMat =
-new THREE.MeshStandardMaterial({
-  color:0x796548,
-  roughness:1
-});
-
-const sandstone =
-new THREE.MeshStandardMaterial({
-  color:0x9a7650,
-  roughness:.92
-});
-
-const darkStone =
-new THREE.MeshStandardMaterial({
-  color:0x66523d,
-  roughness:1
-});
-
-const palaceMat =
-new THREE.MeshStandardMaterial({
-  color:0xb08a5e,
-  roughness:.9
-});
-
-const roofMat =
-new THREE.MeshStandardMaterial({
-  color:0x68482f,
-  roughness:1
-});
-
-const roadMat =
-new THREE.MeshStandardMaterial({
-  color:0x625541,
-  roughness:1
-});
-
-const grassMat =
-new THREE.MeshStandardMaterial({
-  color:0x4d5d38,
-  roughness:1
-});
-
-const waterMat =
-new THREE.MeshStandardMaterial({
-  color:0x466f76,
-  roughness:.3,
-  metalness:.05
-});
-
-/* =====================================================
-   MAP HELPERS
-===================================================== */
-
-function box(
-  x,y,z,
-  w,h,d,
-  mat,
-  rotationY=0
-){
-
-  const mesh =
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      w,h,d
-    ),
-    mat
-  );
-
-  mesh.position.set(
-    x,
-    y+h/2,
-    z
-  );
-
-  mesh.rotation.y =
-    rotationY;
-
-  mesh.castShadow = true;
-
-  mesh.receiveShadow = true;
-
-  scene.add(mesh);
-
-  return mesh;
-
-}
-
-function cylinder(
-  x,y,z,
-  radius,
-  height,
-  mat,
-  segments=16
-){
-
-  const mesh =
-  new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      radius,
-      radius*1.08,
-      height,
-      segments
-    ),
-    mat
-  );
-
-  mesh.position.set(
-    x,
-    y+height/2,
-    z
-  );
-
-  mesh.castShadow = true;
-
-  mesh.receiveShadow = true;
-
-  scene.add(mesh);
-
-  return mesh;
-
-}
-
-function coneRoof(
-  x,y,z,
-  radius,
-  height,
-  mat
-){
-
-  const mesh =
-  new THREE.Mesh(
-    new THREE.ConeGeometry(
-      radius,
-      height,
-      6
-    ),
-    mat
-  );
-
-  mesh.position.set(
-    x,
-    y+height/2,
-    z
-  );
-
-  mesh.castShadow = true;
-
-  scene.add(mesh);
-
-  return mesh;
-
-}
-
-/* =====================================================
-   FORT ISLAND
-===================================================== */
-
-const island =
-new THREE.Mesh(
-  new THREE.CylinderGeometry(
-    76,
-    82,
-    4,
-    64
-  ),
-  groundMat
-);
-
-island.position.y =
--2;
-
-island.receiveShadow =
-true;
-
-scene.add(island);
-
-/* =====================================================
-   OUTER TERRAIN
-===================================================== */
-
-const outerGrass =
-new THREE.Mesh(
-  new THREE.CircleGeometry(
-    170,
-    64
-  ),
-  grassMat
-);
-
-outerGrass.rotation.x =
--Math.PI/2;
-
-outerGrass.position.y =
--4.2;
-
-outerGrass.receiveShadow =
-true;
-
-scene.add(outerGrass);
-
-/* =====================================================
-   MAIN FORT WALL
-===================================================== */
-
-const wallHeight = 8;
-const wallThickness = 5;
-const wallLength = 145;
-
-box(
-  0,0,-72,
-  wallLength,
-  wallHeight,
-  wallThickness,
-  sandstone
-);
-
-box(
-  0,0,72,
-  wallLength,
-  wallHeight,
-  wallThickness,
-  sandstone
-);
-
-box(
-  -72,0,0,
-  wallThickness,
-  wallHeight,
-  wallLength,
-  sandstone
-);
-
-box(
-  72,0,0,
-  wallThickness,
-  wallHeight,
-  wallLength,
-  sandstone
-);
-
-/* =====================================================
-   WALL BATTLEMENTS
-===================================================== */
-
-function battlementsHorizontal(z){
-
-  for(
-    let x=-68;
-    x<=68;
-    x+=7
-  ){
-
-    box(
-      x,
-      wallHeight,
-      z,
-      4,
-      2.5,
-      3.2,
-      darkStone
-    );
-
-  }
-
-}
-
-function battlementsVertical(x){
-
-  for(
-    let z=-68;
-    z<=68;
-    z+=7
-  ){
-
-    box(
-      x,
-      wallHeight,
-      z,
-      3.2,
-      2.5,
-      4,
-      darkStone
-    );
-
-  }
-
-}
-
-battlementsHorizontal(-72);
-battlementsHorizontal(72);
-
-battlementsVertical(-72);
-battlementsVertical(72);
-
-/* =====================================================
-   GATE FUNCTION
-===================================================== */
-
-function createGate(
-  x,z,
-  rotation=0,
-  name=""
-){
-
-  const gate =
-  new THREE.Group();
-
-  gate.position.set(
-    x,
-    0,
-    z
-  );
-
-  gate.rotation.y =
-    rotation;
-
-  const left =
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      5,
-      12,
-      7
-    ),
-    sandstone
-  );
-
-  left.position.set(
-    -5,
-    6,
-    0
-  );
-
-  left.castShadow = true;
-
-  gate.add(left);
-
-  const right =
-  left.clone();
-
-  right.position.x =
-    5;
-
-  gate.add(right);
-
-  const top =
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      15,
-      4,
-      7
-    ),
-    sandstone
-  );
-
-  top.position.y =
-    12;
-
-  top.castShadow = true;
-
-  gate.add(top);
-
-  scene.add(gate);
-
-}
-
-/* =====================================================
-   FOUR GATES
-===================================================== */
-
-createGate(
-  0,
-  -72,
-  0,
-  "Padan Pol"
-);
-
-createGate(
-  0,
-  72,
-  0,
-  "Ram Pol"
-);
-
-createGate(
-  -72,
-  0,
-  Math.PI/2,
-  "Suraj Pol"
-);
-
-createGate(
-  72,
-  0,
-  Math.PI/2,
-  "Hanuman Pol"
-);
-
-/* =====================================================
-   MAIN ROADS
-===================================================== */
-
-box(
-  0,
-  .03,
-  0,
-  9,
-  .15,
-  142,
-  roadMat
-);
-
-box(
-  0,
-  .04,
-  0,
-  142,
-  .15,
-  9,
-  roadMat
-);
-
-box(
-  0,
-  .05,
-  0,
-  6,
-  .16,
-  142,
-  darkStone
-);
-
-box(
-  0,
-  .06,
-  0,
-  142,
-  .16,
-  6,
-  darkStone
-);
-
-/* =====================================================
-   COURTYARD FUNCTION
-===================================================== */
-
-function courtyard(
-  x,z,
-  w,d
-){
-
-  box(
-    x,
-    .08,
-    z,
-    w,
-    .12,
-    d,
-    palaceMat
-  );
-
-  box(
-    x-w/2+1,
-    .1,
-    z,
-    2,
-    .2,
-    d,
-    darkStone
-  );
-
-  box(
-    x+w/2-1,
-    .1,
-    z,
-    2,
-    .2,
-    d,
-    darkStone
-  );
-
-}
-
-/* =====================================================
-   MAHAL FUNCTION
-===================================================== */
-
-function mahal(
-  x,z,
-  w,d,
-  h
-){
-
-  const body =
-  box(
-    x,
-    0,
-    z,
-    w,
-    h,
-    d,
-    palaceMat
-  );
-
-  /* central entrance */
-
-  box(
-    x,
-    0,
-    z-d/2-.4,
-    5,
-    h*.65,
-    1.2,
-    darkStone
-  );
-
-  /* roof */
-
-  box(
-    x,
-    h,
-    z,
-    w+1,
-    1.2,
-    d+1,
-    roofMat
-  );
-
-  /* corner towers */
-
-  cylinder(
-    x-w/2+2,
-    h,
-    z-d/2+2,
-    2.5,
-    3,
-    sandstone
-  );
-
-  cylinder(
-    x+w/2-2,
-    h,
-    z-d/2+2,
-    2.5,
-    3,
-    sandstone
-  );
-
-  coneRoof(
-    x-w/2+2,
-    h+3,
-    z-d/2+2,
-    3,
-    3,
-    roofMat
-  );
-
-  coneRoof(
-    x+w/2-2,
-    h+3,
-    z-d/2+2,
-    3,
-    3,
-    roofMat
-  );
-
-  return body;
-
-}
-
-/* =====================================================
-   MAHAL COMPLEXES
-===================================================== */
-
-mahal(
-  -30,
-  -28,
-  28,
-  20,
-  13
-);
-
-mahal(
-  30,
-  -28,
-  25,
-  19,
-  12
-);
-
-mahal(
-  -30,
-  29,
-  27,
-  19,
-  12
-);
-
-mahal(
-  30,
-  29,
-  27,
-  19,
-  12
-);
-
-/* =====================================================
-   CENTRAL PALACE
-===================================================== */
-
-mahal(
-  0,
-  0,
-  22,
-  20,
-  11
-);
-
-/* =====================================================
-   CENTRAL COURTYARD
-===================================================== */
-
-courtyard(
-  0,
-  19,
-  26,
-  16
-);
-
-/* =====================================================
-   VIJAY STAMBH STYLE TOWER
-===================================================== */
-
-function victoryTower(
-  x,z
-){
-
-  const base =
-  cylinder(
-    x,
-    0,
-    z,
-    5,
-    4,
-    darkStone,
-    10
-  );
-
-  for(
-    let i=0;
-    i<5;
-    i++
-  ){
-
-    cylinder(
-      x,
-      4+i*3.4,
-      z,
-      3.8-i*.25,
-      3.2,
-      sandstone,
-      10
-    );
-
-  }
-
-  cylinder(
-    x,
-    21,
-    z,
-    2.7,
-    5,
-    palaceMat,
-    10
-  );
-
-  coneRoof(
-    x,
-    26,
-    z,
-    4,
-    5,
-    roofMat
-  );
-
-}
-
-victoryTower(
-  -17,
-  17
-);
-
-/* =====================================================
-   KIRTI STAMBH STYLE TOWER
-===================================================== */
-
-function heritageTower(
-  x,z
-){
-
-  cylinder(
-    x,
-    0,
-    z,
-    4,
-    3,
-    darkStone,
-    8
-  );
-
-  cylinder(
-    x,
-    3,
-    z,
-    2.8,
-    13,
-    sandstone,
-    8
-  );
-
-  cylinder(
-    x,
-    16,
-    z,
-    3.4,
-    3,
-    palaceMat,
-    8
-  );
-
-  coneRoof(
-    x,
-    19,
-    z,
-    3.8,
-    4,
-    roofMat
-  );
-
-}
-
-heritageTower(
-  17,
-  17
-);
-
-/* =====================================================
-   SMALL WATCH TOWERS
-===================================================== */
-
-const watchPositions = [
-
-  [-55,-55],
-  [55,-55],
-  [-55,55],
-  [55,55],
-
-  [-55,0],
-  [55,0],
-  [0,-55],
-  [0,55]
-
-];
-
-for(
-  const [x,z] of watchPositions
-){
-
-  cylinder(
-    x,
-    0,
-    z,
-    4,
-    10,
-    sandstone,
-    12
-  );
-
-  coneRoof(
-    x,
-    10,
-    z,
-    5,
-    4,
-    roofMat
-  );
-
-}
-
-/* =====================================================
-   TEMPLE STYLE BUILDING
-===================================================== */
-
-function temple(
-  x,z
-){
-
-  box(
-    x,
-    0,
-    z,
-    13,
-    7,
-    13,
-    palaceMat
-  );
-
-  for(
-    let i=-4;
-    i<=4;
-    i+=4
-  ){
-
-    cylinder(
-      x+i,
-      7,
-      z-5,
-      1,
-      4,
-      sandstone,
-      12
-    );
-
-  }
-
-  coneRoof(
-    x,
-    7,
-    z,
-    8,
-    7,
-    roofMat
-  );
-
-}
-
-temple(
-  -44,
-  22
-);
-
-temple(
-  44,
-  -20
-);
-
-/* =====================================================
-   WATER TANK
-===================================================== */
-
-const tank =
-new THREE.Mesh(
-  new THREE.CylinderGeometry(
-    8,
-    8,
-    .7,
-    32
-  ),
-  waterMat
-);
-
-tank.position.set(
-  45,
-  .25,
-  28
-);
-
-tank.receiveShadow =
-true;
-
-scene.add(tank);
-
-cylinder(
-  45,
-  .2,
-  28,
-  9,
-  1,
-  darkStone,
-  32
-);
-
-/* =====================================================
-   STAIRS
-===================================================== */
-
-function stairs(
-  x,z,
-  rotation=0
-){
-
-  const group =
-  new THREE.Group();
-
-  for(
-    let i=0;
-    i<8;
-    i++
-  ){
-
-    const step =
-    new THREE.Mesh(
-      new THREE.BoxGeometry(
-        7,
-        .5+i*.03,
-        1.2
-      ),
-      darkStone
-    );
-
-    step.position.set(
-      0,
-      .25+i*.35,
-      -i*.9
-    );
-
-    step.castShadow = true;
-
-    group.add(step);
-
-  }
-
-  group.position.set(
-    x,
-    0,
-    z
-  );
-
-  group.rotation.y =
-    rotation;
-
-  scene.add(group);
-
-}
-
-stairs(
-  0,
-  -49,
-  0
-);
-
-stairs(
-  0,
-  48,
-  Math.PI
-);
-
-/* =====================================================
-   TREES
-===================================================== */
-
-function tree(
-  x,z,
-  scale=1
-){
-
-  const group =
-  new THREE.Group();
-
-  const trunk =
-  new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      .35*scale,
-      .5*scale,
-      3*scale,
-      8
-    ),
-    new THREE.MeshStandardMaterial({
-      color:0x5b3b25
-    })
-  );
-
-  trunk.position.y =
-    1.5*scale;
-
-  trunk.castShadow = true;
-
-  group.add(trunk);
-
-  const leaves =
-  new THREE.Mesh(
-    new THREE.SphereGeometry(
-      2.1*scale,
-      12,
-      10
-    ),
-    new THREE.MeshStandardMaterial({
-      color:0x3f5e32
-    })
-  );
-
-  leaves.position.y =
-    4*scale;
-
-  leaves.castShadow = true;
-
-  group.add(leaves);
-
-  group.position.set(
-    x,
-    0,
-    z
-  );
-
-  scene.add(group);
-
-}
-
-const treePositions = [
-
-  [-55,-30],
-  [-51,-20],
-  [-47,-12],
-
-  [50,35],
-  [55,43],
-
-  [-42,43],
-  [-35,49],
-
-  [43,4
+const menu = document.getElementById("menu");
+const hud = document.getElementById("hud");
+const roomInfo = document.getElementById("roomInfo");
+const readyButton = document.getElementById("readyButton");
+const statusText = document.getElementById("status");
+const
