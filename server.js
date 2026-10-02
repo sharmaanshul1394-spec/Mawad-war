@@ -2,87 +2,332 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 
-const app = express();
+const app=express();
 
-const server =
+const server=
   http.createServer(app);
 
-const io =
+const io=
   new Server(server);
 
 app.use(
   express.static("public")
 );
 
-const players =
+const players=
   new Map();
 
-const spawnPoints = [
+const rooms=
+  new Map();
 
-  { x: -45, z: -30 },
-  { x: 35, z: -25 },
-  { x: -30, z: 35 },
-  { x: 40, z: 35 },
-  { x: 0, z: -45 },
-  { x: -45, z: 5 },
-  { x: 45, z: 5 },
-  { x: 0, z: 45 }
-
+const spawnPoints=[
+  {x:-45,z:-30},
+  {x:35,z:-25},
+  {x:-30,z:35},
+  {x:40,z:35}
 ];
+
+const modes={
+  "1v1":2,
+  "2v2":4
+};
+
+function getRoom(mode){
+
+  for(
+    const room of rooms.values()
+  ){
+
+    if(
+      room.mode===mode &&
+      !room.started &&
+      room.players.size<
+      room.maxPlayers
+    ){
+
+      return room;
+    }
+  }
+
+  const room={
+    id:
+      `${mode}-${Date.now()}-${Math.random()
+      .toString(36)
+      .slice(2,7)}`,
+
+    mode,
+
+    maxPlayers:
+      modes[mode],
+
+    players:new Set(),
+
+    ready:new Set(),
+
+    started:false
+  };
+
+  rooms.set(
+    room.id,
+    room
+  );
+
+  return room;
+}
+
+function sendRoomUpdate(room){
+
+  io.to(room.id).emit(
+    "roomUpdate",
+    {
+      mode:room.mode,
+      players:room.players.size,
+      maxPlayers:room.maxPlayers,
+      ready:room.ready.size
+    }
+  );
+}
+
+function removeFromRoom(socket){
+
+  if(!socket.roomId){
+    return;
+  }
+
+  const room=
+    rooms.get(
+      socket.roomId
+    );
+
+  if(!room){
+    return;
+  }
+
+  room.players.delete(
+    socket.id
+  );
+
+  room.ready.delete(
+    socket.id
+  );
+
+  socket.leave(
+    room.id
+  );
+
+  socket.roomId=null;
+
+  if(
+    room.players.size===0
+  ){
+
+    rooms.delete(
+      room.id
+    );
+
+    return;
+  }
+
+  sendRoomUpdate(room);
+}
+
+function startMatch(room){
+
+  if(room.started){
+    return;
+  }
+
+  if(
+    room.players.size !==
+    room.maxPlayers
+  ){
+
+    return;
+  }
+
+  if(
+    room.ready.size !==
+    room.maxPlayers
+  ){
+
+    return;
+  }
+
+  room.started=true;
+
+  let index=0;
+
+  for(
+    const id of room.players
+  ){
+
+    const player=
+      players.get(id);
+
+    if(!player)continue;
+
+    player.alive=true;
+    player.hp=100;
+
+    const spawn=
+      spawnPoints[
+        index %
+        spawnPoints.length
+      ];
+
+    player.x=spawn.x;
+    player.z=spawn.z;
+
+    index++;
+
+  }
+
+  io.to(room.id).emit(
+    "matchStart",
+    {
+      mode:room.mode,
+      players:[
+        ...room.players
+      ]
+      .map(id=>
+        players.get(id)
+      )
+      .filter(Boolean)
+    }
+  );
+
+  for(
+    const id of room.players
+  ){
+
+    io.to(id).emit(
+      "playerMoved",
+      players.get(id)
+    );
+
+  }
+}
 
 io.on(
   "connection",
-  socket => {
+  socket=>{
 
-    const spawn =
+    const spawn=
       spawnPoints[
         Math.floor(
-          Math.random() *
+          Math.random()*
           spawnPoints.length
         )
       ];
 
-    const player = {
-
-      id: socket.id,
-
-      x: spawn.x,
-
-      y: 0,
-
-      z: spawn.z,
-
-      hp: 100,
-
-      alive: true
-
-    };
-
     players.set(
       socket.id,
-      player
+      {
+        id:socket.id,
+        x:spawn.x,
+        y:0,
+        z:spawn.z,
+        hp:100,
+        alive:true
+      }
     );
 
     socket.emit(
       "init",
       {
-        id: socket.id,
-        players: [
-          ...players.values()
-        ]
+        id:socket.id
       }
     );
 
-    socket.broadcast.emit(
-      "playerJoined",
-      player
+    /* =====================
+       SELECT MODE
+    ===================== */
+
+    socket.on(
+      "selectMode",
+      mode=>{
+
+        if(
+          !modes[mode]
+        ){
+
+          return;
+        }
+
+        removeFromRoom(
+          socket
+        );
+
+        const room=
+          getRoom(mode);
+
+        room.players.add(
+          socket.id
+        );
+
+        socket.roomId=
+          room.id;
+
+        socket.join(
+          room.id
+        );
+
+        sendRoomUpdate(
+          room
+        );
+
+      }
     );
+
+    /* =====================
+       READY
+    ===================== */
+
+    socket.on(
+      "ready",
+      isReady=>{
+
+        const room=
+          rooms.get(
+            socket.roomId
+          );
+
+        if(!room)return;
+
+        if(isReady){
+
+          room.ready.add(
+            socket.id
+          );
+
+        }else{
+
+          room.ready.delete(
+            socket.id
+          );
+
+        }
+
+        sendRoomUpdate(
+          room
+        );
+
+        startMatch(
+          room
+        );
+
+      }
+    );
+
+    /* =====================
+       MOVE
+    ===================== */
 
     socket.on(
       "move",
-      data => {
+      data=>{
 
-        const player =
+        const player=
           players.get(
             socket.id
           );
@@ -93,13 +338,25 @@ io.on(
         ){
 
           return;
-
         }
 
-        const x =
+        const room=
+          rooms.get(
+            socket.roomId
+          );
+
+        if(
+          !room ||
+          !room.started
+        ){
+
+          return;
+        }
+
+        const x=
           Number(data.x);
 
-        const z =
+        const z=
           Number(data.z);
 
         if(
@@ -108,10 +365,9 @@ io.on(
         ){
 
           return;
-
         }
 
-        player.x =
+        player.x=
           Math.max(
             -62,
             Math.min(
@@ -120,7 +376,7 @@ io.on(
             )
           );
 
-        player.z =
+        player.z=
           Math.max(
             -62,
             Math.min(
@@ -129,7 +385,7 @@ io.on(
             )
           );
 
-        io.emit(
+        socket.to(room.id).emit(
           "playerMoved",
           player
         );
@@ -137,54 +393,89 @@ io.on(
       }
     );
 
+    /* =====================
+       SHOOT
+    ===================== */
+
     socket.on(
       "shoot",
-      targetId => {
+      ()=>{
 
-        const shooter =
+        const room=
+          rooms.get(
+            socket.roomId
+          );
+
+        const shooter=
           players.get(
             socket.id
           );
 
-        const target =
-          players.get(
-            targetId
-          );
-
         if(
+          !room ||
+          !room.started ||
           !shooter ||
-          !target ||
-          !shooter.alive ||
-          !target.alive
+          !shooter.alive
         ){
 
           return;
-
         }
 
-        const dx =
-          shooter.x -
-          target.x;
+        let target=null;
+        let closest=Infinity;
 
-        const dz =
-          shooter.z -
-          target.z;
-
-        const distance =
-          Math.sqrt(
-            dx*dx+
-            dz*dz
-          );
-
-        if(
-          distance>30
+        for(
+          const id of room.players
         ){
 
-          return;
+          if(
+            id===socket.id
+          ){
 
+            continue;
+          }
+
+          const candidate=
+            players.get(id);
+
+          if(
+            !candidate ||
+            !candidate.alive
+          ){
+
+            continue;
+          }
+
+          const dx=
+            shooter.x-
+            candidate.x;
+
+          const dz=
+            shooter.z-
+            candidate.z;
+
+          const distance=
+            Math.sqrt(
+              dx*dx+
+              dz*dz
+            );
+
+          if(
+            distance<=30 &&
+            distance<closest
+          ){
+
+            closest=distance;
+            target=candidate;
+
+          }
         }
 
-        target.hp =
+        if(!target){
+          return;
+        }
+
+        target.hp=
           Math.max(
             0,
             target.hp-25
@@ -198,7 +489,7 @@ io.on(
 
         }
 
-        io.emit(
+        io.to(room.id).emit(
           "playerHit",
           {
             id:target.id,
@@ -207,19 +498,49 @@ io.on(
           }
         );
 
+        if(
+          !target.alive
+        ){
+
+          checkWinner(
+            room
+          );
+
+        }
+
       }
     );
 
+    /* =====================
+       RELOAD / SWITCH
+       Reserved for future
+       server-authoritative
+       weapon inventory.
+    ===================== */
+
+    socket.on(
+      "reload",
+      ()=>{}
+    );
+
+    socket.on(
+      "switchWeapon",
+      ()=>{}
+    );
+
+    /* =====================
+       DISCONNECT
+    ===================== */
+
     socket.on(
       "disconnect",
-      () => {
+      ()=>{
 
-        players.delete(
-          socket.id
+        removeFromRoom(
+          socket
         );
 
-        io.emit(
-          "playerLeft",
+        players.delete(
           socket.id
         );
 
@@ -229,16 +550,49 @@ io.on(
   }
 );
 
-const PORT =
+function checkWinner(room){
+
+  const alive=
+    [...room.players]
+    .filter(
+      id=>{
+        const p=
+          players.get(id);
+
+        return p &&
+          p.alive;
+      }
+    );
+
+  if(
+    alive.length===1
+  ){
+
+    const winner=
+      alive[0];
+
+    io.to(room.id).emit(
+      "matchEnd",
+      {
+        winner
+      }
+    );
+
+    room.started=false;
+    room.ready.clear();
+
+  }
+
+}
+
+const PORT=
   process.env.PORT || 3000;
 
 server.listen(
   PORT,
-  () => {
-
+  ()=>{
     console.log(
       `Server running on port ${PORT}`
     );
-
   }
 );
