@@ -2,55 +2,51 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 
-const app=express();
+const app = express();
 
-const server=
-  http.createServer(app);
+const server = http.createServer(app);
 
-const io=
-  new Server(server);
+const io = new Server(server);
 
-app.use(
-  express.static("public")
-);
+app.use(express.static("public"));
 
 /* =========================
    WEAPONS
 ========================= */
 
-const WEAPONS={
+const WEAPONS = {
 
-  Pistol:{
-    damage:25,
-    range:30,
-    magazineSize:12,
-    reserveStart:60,
-    fireDelay:350,
-    reloadTime:900
+  Pistol: {
+    damage: 25,
+    range: 30,
+    magazineSize: 12,
+    reserveStart: 60,
+    fireDelay: 350,
+    reloadTime: 900
   },
 
-  Rifle:{
-    damage:18,
-    range:45,
-    magazineSize:30,
-    reserveStart:120,
-    fireDelay:110,
-    reloadTime:1300
+  Rifle: {
+    damage: 18,
+    range: 45,
+    magazineSize: 30,
+    reserveStart: 120,
+    fireDelay: 110,
+    reloadTime: 1300
   },
 
-  Shotgun:{
-    damage:15,
-    pellets:6,
-    range:18,
-    magazineSize:6,
-    reserveStart:36,
-    fireDelay:800,
-    reloadTime:1500
+  Shotgun: {
+    damage: 15,
+    pellets: 6,
+    range: 18,
+    magazineSize: 6,
+    reserveStart: 36,
+    fireDelay: 800,
+    reloadTime: 1500
   }
 
 };
 
-const weaponList=[
+const weaponList = [
   "Pistol",
   "Rifle",
   "Shotgun"
@@ -60,38 +56,36 @@ const weaponList=[
    GAME DATA
 ========================= */
 
-const players=new Map();
-const rooms=new Map();
+const players = new Map();
+const rooms = new Map();
 
-const spawnPoints=[
-  {x:-45,z:-30},
-  {x:45,z:30},
-  {x:-45,z:30},
-  {x:45,z:-30}
+const spawnPoints = [
+  { x: -45, z: -30 },
+  { x: 45, z: 30 },
+  { x: -45, z: 30 },
+  { x: 45, z: -30 }
 ];
 
-const modes={
-  "1v1":2,
-  "2v2":4
+const modes = {
+  "1v1": 2,
+  "2v2": 4
 };
 
 /* =========================
    HELPERS
 ========================= */
 
-function makeWeapons(){
+function makeWeapons() {
 
-  const weapons={};
+  const weapons = {};
 
-  for(
-    const name of weaponList
-  ){
+  for (const name of weaponList) {
 
-    const w=WEAPONS[name];
+    const w = WEAPONS[name];
 
-    weapons[name]={
-      magazine:w.magazineSize,
-      reserve:w.reserveStart
+    weapons[name] = {
+      magazine: w.magazineSize,
+      reserve: w.reserveStart
     };
 
   }
@@ -99,33 +93,29 @@ function makeWeapons(){
   return weapons;
 }
 
-function currentWeapon(player){
+function currentWeapon(player) {
 
-  return WEAPONS[
-    player.weapon
-  ];
+  return WEAPONS[player.weapon];
+
 }
 
-function sendWeaponState(socket){
+function sendWeaponState(socket) {
 
-  const player=
-    players.get(socket.id);
+  const player = players.get(socket.id);
 
-  if(!player){
+  if (!player) {
     return;
   }
 
-  const w=
-    player.weapons[
-      player.weapon
-    ];
+  const w =
+    player.weapons[player.weapon];
 
   socket.emit(
     "weaponState",
     {
-      weapon:player.weapon,
-      magazine:w.magazine,
-      reserve:w.reserve
+      weapon: player.weapon,
+      magazine: w.magazine,
+      reserve: w.reserve
     }
   );
 
@@ -135,66 +125,62 @@ function sendWeaponState(socket){
    ROOMS
 ========================= */
 
-function createRoom(mode){
+function createRoom(mode) {
 
-  const room={
+  const room = {
 
     id:
       `${mode}-${Date.now()}-${Math.random()
       .toString(36)
-      .slice(2,7)}`,
+      .slice(2, 7)}`,
 
     mode,
 
-    maxPlayers:
-      modes[mode],
+    maxPlayers: modes[mode],
 
-    players:new Set(),
+    players: new Set(),
 
-    ready:new Set(),
+    ready: new Set(),
 
-    started:false
+    started: false
 
   };
 
-  rooms.set(
-    room.id,
-    room
-  );
+  rooms.set(room.id, room);
 
   return room;
+
 }
 
-function findRoom(mode){
+function findRoom(mode) {
 
-  for(
-    const room of rooms.values()
-  ){
+  for (const room of rooms.values()) {
 
-    if(
-      room.mode===mode &&
+    if (
+      room.mode === mode &&
       !room.started &&
-      room.players.size<
-      room.maxPlayers
-    ){
+      room.players.size < room.maxPlayers
+    ) {
 
       return room;
+
     }
 
   }
 
   return createRoom(mode);
+
 }
 
-function sendRoomUpdate(room){
+function sendRoomUpdate(room) {
 
   io.to(room.id).emit(
     "roomUpdate",
     {
-      mode:room.mode,
-      players:room.players.size,
-      maxPlayers:room.maxPlayers,
-      ready:room.ready.size
+      mode: room.mode,
+      players: room.players.size,
+      maxPlayers: room.maxPlayers,
+      ready: room.ready.size
     }
   );
 
@@ -204,43 +190,34 @@ function sendRoomUpdate(room){
    REMOVE ROOM
 ========================= */
 
-function removeFromRoom(socket){
+function removeFromRoom(socket) {
 
-  if(!socket.roomId){
+  if (!socket.roomId) {
     return;
   }
 
-  const room=
-    rooms.get(
-      socket.roomId
-    );
+  const room =
+    rooms.get(socket.roomId);
 
-  if(!room){
-    socket.roomId=null;
+  if (!room) {
+
+    socket.roomId = null;
+
     return;
+
   }
 
-  room.players.delete(
-    socket.id
-  );
+  room.players.delete(socket.id);
 
-  room.ready.delete(
-    socket.id
-  );
+  room.ready.delete(socket.id);
 
-  socket.leave(
-    room.id
-  );
+  socket.leave(room.id);
 
-  socket.roomId=null;
+  socket.roomId = null;
 
-  if(
-    room.players.size===0
-  ){
+  if (room.players.size === 0) {
 
-    rooms.delete(
-      room.id
-    );
+    rooms.delete(room.id);
 
     return;
 
@@ -254,29 +231,24 @@ function removeFromRoom(socket){
    TEAMS
 ========================= */
 
-function assignTeams(room){
+function assignTeams(room) {
 
-  const ids=[
-    ...room.players
-  ];
+  const ids = [...room.players];
 
-  ids.forEach(
-    (id,index)=>{
+  ids.forEach((id, index) => {
 
-      const player=
-        players.get(id);
+    const player = players.get(id);
 
-      if(!player){
-        return;
-      }
-
-      player.team=
-        room.mode==="1v1"
-        ?(index===0?"A":"B")
-        :(index<2?"A":"B");
-
+    if (!player) {
+      return;
     }
-  );
+
+    player.team =
+      room.mode === "1v1"
+        ? (index === 0 ? "A" : "B")
+        : (index < 2 ? "A" : "B");
+
+  });
 
 }
 
@@ -284,92 +256,93 @@ function assignTeams(room){
    START
 ========================= */
 
-function startMatch(room){
+function startMatch(room) {
 
-  if(room.started){
+  if (room.started) {
     return;
   }
 
-  if(
-    room.players.size !==
-    room.maxPlayers
-  ){
+  if (
+    room.players.size !== room.maxPlayers
+  ) {
     return;
   }
 
-  if(
-    room.ready.size !==
-    room.maxPlayers
-  ){
+  if (
+    room.ready.size !== room.maxPlayers
+  ) {
     return;
   }
 
-  room.started=true;
+  room.started = true;
 
   assignTeams(room);
 
-  let index=0;
+  let index = 0;
 
-  for(
-    const id of room.players
-  ){
+  for (const id of room.players) {
 
-    const player=
-      players.get(id);
+    const player = players.get(id);
 
-    if(!player){
+    if (!player) {
       continue;
     }
 
-    const spawn=
+    const spawn =
       spawnPoints[
-        index %
-        spawnPoints.length
+        index % spawnPoints.length
       ];
 
-    player.x=spawn.x;
-    player.z=spawn.z;
-    player.hp=100;
-    player.alive=true;
-    player.reloading=false;
-    player.lastShot=0;
+    player.x = spawn.x;
+    player.z = spawn.z;
 
-    player.weapon="Pistol";
-    player.weapons=
-      makeWeapons();
+    player.hp = 100;
+
+    player.alive = true;
+
+    player.reloading = false;
+
+    player.lastShot = 0;
+
+    player.weapon = "Pistol";
+
+    player.weapons = makeWeapons();
 
     index++;
 
   }
 
-  for(
-    const id of room.players
-  ){
+  for (const id of room.players) {
 
-    const player=
-      players.get(id);
+    const player = players.get(id);
 
     io.to(id).emit(
       "matchStart",
       {
-        mode:room.mode,
-        myTeam:player.team,
+        mode: room.mode,
 
-        players:[
-          ...room.players
-        ]
-        .map(
-          pid=>
-            players.get(pid)
-        )
-        .filter(Boolean)
+        myTeam: player.team,
+
+        players:
+          [...room.players]
+            .map(
+              pid => players.get(pid)
+            )
+            .filter(Boolean)
 
       }
     );
 
-    sendWeaponState(
-      io.sockets.sockets.get(id)
-    );
+    const targetSocket =
+      io.sockets.sockets.get(id);
+
+    if (targetSocket) {
+
+      sendWeaponState(
+        targetSocket
+      );
+
+    }
 
   }
 
@@ -379,22 +352,18 @@ function startMatch(room){
    WINNER
 ========================= */
 
-function checkWinner(room){
+function checkWinner(room) {
 
-  const aliveTeams=
-    new Set();
+  const aliveTeams = new Set();
 
-  for(
-    const id of room.players
-  ){
+  for (const id of room.players) {
 
-    const player=
-      players.get(id);
+    const player = players.get(id);
 
-    if(
+    if (
       player &&
       player.alive
-    ){
+    ) {
 
       aliveTeams.add(
         player.team
@@ -404,14 +373,12 @@ function checkWinner(room){
 
   }
 
-  if(
-    aliveTeams.size<=1
-  ){
+  if (aliveTeams.size <= 1) {
 
-    const winnerTeam=
-      aliveTeams.size===1
-      ?[...aliveTeams][0]
-      :null;
+    const winnerTeam =
+      aliveTeams.size === 1
+        ? [...aliveTeams][0]
+        : null;
 
     io.to(room.id).emit(
       "matchEnd",
@@ -420,7 +387,8 @@ function checkWinner(room){
       }
     );
 
-    room.started=false;
+    room.started = false;
+
     room.ready.clear();
 
   }
@@ -431,155 +399,153 @@ function checkWinner(room){
    SHOOT
 ========================= */
 
-function shoot(socket){
+function shoot(socket) {
 
-  const player=
-    players.get(
-      socket.id
-    );
+  const player =
+    players.get(socket.id);
 
-  const room=
-    rooms.get(
-      socket.roomId
-    );
+  const room =
+    rooms.get(socket.roomId);
 
-  if(
+  if (
     !player ||
     !room ||
     !room.started ||
     !player.alive ||
     player.reloading
-  ){
+  ) {
 
     return;
+
   }
 
-  const now=Date.now();
+  const now = Date.now();
 
-  const weapon=
+  const weapon =
     currentWeapon(player);
 
-  if(
-    now-player.lastShot<
+  if (
+    now - player.lastShot <
     weapon.fireDelay
-  ){
+  ) {
 
     return;
+
   }
 
-  const ammo=
-    player.weapons[
-      player.weapon
-    ];
+  const ammo =
+    player.weapons[player.weapon];
 
-  if(
-    ammo.magazine<=0
-  ){
+  if (ammo.magazine <= 0) {
 
     sendWeaponState(socket);
 
     return;
+
   }
 
-  player.lastShot=now;
+  player.lastShot = now;
 
   ammo.magazine--;
 
-  let target=null;
-  let closest=Infinity;
+  /* =========================
+     SHOOTING EFFECT
+     ========================= */
 
-  for(
-    const id of room.players
-  ){
+  io.to(room.id).emit(
+    "shotFired",
+    {
+      id: socket.id,
+      weapon: player.weapon
+    }
+  );
 
-    if(
-      id===socket.id
-    ){
+  let target = null;
+
+  let closest = Infinity;
+
+  for (const id of room.players) {
+
+    if (id === socket.id) {
       continue;
     }
 
-    const enemy=
-      players.get(id);
+    const enemy = players.get(id);
 
-    if(
+    if (
       !enemy ||
       !enemy.alive
-    ){
+    ) {
       continue;
     }
 
     /* Friendly fire OFF */
 
-    if(
-      enemy.team===
-      player.team
-    ){
+    if (
+      enemy.team === player.team
+    ) {
       continue;
     }
 
-    const dx=
-      player.x-enemy.x;
+    const dx =
+      player.x - enemy.x;
 
-    const dz=
-      player.z-enemy.z;
+    const dz =
+      player.z - enemy.z;
 
-    const distance=
-      Math.hypot(dx,dz);
+    const distance =
+      Math.hypot(dx, dz);
 
-    if(
-      distance<=weapon.range &&
-      distance<closest
-    ){
+    if (
+      distance <= weapon.range &&
+      distance < closest
+    ) {
 
-      closest=distance;
-      target=enemy;
+      closest = distance;
+
+      target = enemy;
 
     }
 
   }
 
-  if(target){
+  if (target) {
 
-    let damage=
+    let damage =
       weapon.damage;
 
-    if(
-      player.weapon===
-      "Shotgun"
-    ){
+    if (
+      player.weapon === "Shotgun"
+    ) {
 
-      damage=
-        weapon.damage*
+      damage =
+        weapon.damage *
         weapon.pellets;
 
     }
 
-    target.hp=
+    target.hp =
       Math.max(
         0,
-        target.hp-damage
+        target.hp - damage
       );
 
-    if(
-      target.hp===0
-    ){
+    if (target.hp === 0) {
 
-      target.alive=false;
+      target.alive = false;
 
     }
 
     io.to(room.id).emit(
       "playerHit",
       {
-        id:target.id,
-        hp:target.hp,
-        alive:target.alive
+        id: target.id,
+        hp: target.hp,
+        alive: target.alive
       }
     );
 
-    if(
-      !target.alive
-    ){
+    if (!target.alive) {
 
       checkWinner(room);
 
@@ -595,86 +561,91 @@ function shoot(socket){
    RELOAD
 ========================= */
 
-function reload(socket){
+function reload(socket) {
 
-  const player=
-    players.get(
-      socket.id
-    );
+  const player =
+    players.get(socket.id);
 
-  if(
+  if (
     !player ||
     !player.alive ||
     player.reloading
-  ){
+  ) {
+
     return;
+
   }
 
-  const weapon=
+  const weapon =
     currentWeapon(player);
 
-  const ammo=
-    player.weapons[
-      player.weapon
-    ];
+  const ammo =
+    player.weapons[player.weapon];
 
-  if(
-    ammo.magazine>=
+  if (
+    ammo.magazine >=
     weapon.magazineSize
-  ){
+  ) {
+
     return;
+
   }
 
-  if(
-    ammo.reserve<=0
-  ){
+  if (ammo.reserve <= 0) {
+
     return;
+
   }
 
-  player.reloading=true;
+  player.reloading = true;
+
+  socket.emit(
+    "reloadStart",
+    {
+      weapon: player.weapon,
+      duration: weapon.reloadTime
+    }
+  );
 
   setTimeout(
-    ()=>{
+    () => {
 
-      if(
-        !players.has(
-          socket.id
-        )
-      ){
+      if (
+        !players.has(socket.id)
+      ) {
+
+        return;
+
+      }
+
+      const p =
+        players.get(socket.id);
+
+      if (!p) {
         return;
       }
 
-      const p=
-        players.get(
-          socket.id
-        );
-
-      if(!p){
-        return;
-      }
-
-      const w=
+      const w =
         currentWeapon(p);
 
-      const a=
-        p.weapons[
-          p.weapon
-        ];
+      const a =
+        p.weapons[p.weapon];
 
-      const needed=
-        w.magazineSize-
+      const needed =
+        w.magazineSize -
         a.magazine;
 
-      const amount=
+      const amount =
         Math.min(
           needed,
           a.reserve
         );
 
-      a.magazine+=amount;
-      a.reserve-=amount;
+      a.magazine += amount;
 
-      p.reloading=false;
+      a.reserve -= amount;
+
+      p.reloading = false;
 
       sendWeaponState(socket);
 
@@ -688,31 +659,31 @@ function reload(socket){
    SWITCH WEAPON
 ========================= */
 
-function switchWeapon(socket){
+function switchWeapon(socket) {
 
-  const player=
-    players.get(
-      socket.id
-    );
+  const player =
+    players.get(socket.id);
 
-  if(
+  if (
     !player ||
     !player.alive ||
     player.reloading
-  ){
+  ) {
+
     return;
+
   }
 
-  const current=
+  const current =
     weaponList.indexOf(
       player.weapon
     );
 
-  const next=
-    (current+1)%
+  const next =
+    (current + 1) %
     weaponList.length;
 
-  player.weapon=
+  player.weapon =
     weaponList[next];
 
   sendWeaponState(socket);
@@ -725,57 +696,62 @@ function switchWeapon(socket){
 
 io.on(
   "connection",
-  socket=>{
+  socket => {
 
     players.set(
       socket.id,
       {
-        id:socket.id,
+        id: socket.id,
 
-        x:0,
-        y:0,
-        z:0,
+        x: 0,
+        y: 0,
+        z: 0,
 
-        hp:100,
-        alive:true,
+        hp: 100,
+        alive: true,
 
-        team:null,
+        team: null,
 
-        weapon:"Pistol",
-        weapons:makeWeapons(),
+        weapon: "Pistol",
 
-        lastShot:0,
-        reloading:false
+        weapons:
+          makeWeapons(),
+
+        lastShot: 0,
+
+        reloading: false
       }
     );
 
     socket.emit(
       "init",
       {
-        id:socket.id
+        id: socket.id
       }
     );
 
-    /* MODE */
+    /* =====================
+       MODE
+    ===================== */
 
     socket.on(
       "selectMode",
-      mode=>{
+      mode => {
 
-        if(!modes[mode]){
+        if (!modes[mode]) {
           return;
         }
 
         removeFromRoom(socket);
 
-        const room=
+        const room =
           findRoom(mode);
 
         room.players.add(
           socket.id
         );
 
-        socket.roomId=
+        socket.roomId =
           room.id;
 
         socket.join(
@@ -787,31 +763,35 @@ io.on(
       }
     );
 
-    /* READY */
+    /* =====================
+       READY
+    ===================== */
 
     socket.on(
       "ready",
-      isReady=>{
+      isReady => {
 
-        const room=
+        const room =
           rooms.get(
             socket.roomId
           );
 
-        if(
+        if (
           !room ||
           room.started
-        ){
+        ) {
+
           return;
+
         }
 
-        if(isReady){
+        if (isReady) {
 
           room.ready.add(
             socket.id
           );
 
-        }else{
+        } else {
 
           room.ready.delete(
             socket.id
@@ -826,45 +806,51 @@ io.on(
       }
     );
 
-    /* MOVE */
+    /* =====================
+       MOVE
+    ===================== */
 
     socket.on(
       "move",
-      data=>{
+      data => {
 
-        const room=
+        const room =
           rooms.get(
             socket.roomId
           );
 
-        const player=
+        const player =
           players.get(
             socket.id
           );
 
-        if(
+        if (
           !room ||
           !room.started ||
           !player ||
           !player.alive
-        ){
+        ) {
+
           return;
+
         }
 
-        const x=
-          Number(data.x);
+        const x =
+          Number(data?.x);
 
-        const z=
-          Number(data.z);
+        const z =
+          Number(data?.z);
 
-        if(
+        if (
           !Number.isFinite(x) ||
           !Number.isFinite(z)
-        ){
+        ) {
+
           return;
+
         }
 
-        player.x=
+        player.x =
           Math.max(
             -62,
             Math.min(
@@ -873,7 +859,7 @@ io.on(
             )
           );
 
-        player.z=
+        player.z =
           Math.max(
             -62,
             Math.min(
@@ -890,36 +876,46 @@ io.on(
       }
     );
 
-    /* WEAPONS */
+    /* =====================
+       WEAPONS
+    ===================== */
 
     socket.on(
       "shoot",
-      ()=>{
+      () => {
+
         shoot(socket);
+
       }
     );
 
     socket.on(
       "reload",
-      ()=>{
+      () => {
+
         reload(socket);
+
       }
     );
 
     socket.on(
       "switchWeapon",
-      ()=>{
+      () => {
+
         switchWeapon(socket);
+
       }
     );
 
-    /* DISCONNECT */
+    /* =====================
+       DISCONNECT
+    ===================== */
 
     socket.on(
       "disconnect",
-      ()=>{
+      () => {
 
-        const room=
+        const room =
           rooms.get(
             socket.roomId
           );
@@ -930,10 +926,10 @@ io.on(
           socket.id
         );
 
-        if(
+        if (
           room &&
           room.started
-        ){
+        ) {
 
           checkWinner(room);
 
@@ -949,14 +945,16 @@ io.on(
    SERVER
 ========================= */
 
-const PORT=
+const PORT =
   process.env.PORT || 3000;
 
 server.listen(
   PORT,
-  ()=>{
+  () => {
+
     console.log(
       `Chittorgarh server running on port ${PORT}`
     );
+
   }
 );
