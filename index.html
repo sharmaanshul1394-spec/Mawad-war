@@ -2,18 +2,21 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+
 <meta name="viewport"
 content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 
-<title>Chittorgarh Battle Royale</title>
+<title>Chittorgarh Battle</title>
 
 <style>
+
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
+html,
+body{
   margin:0;
   width:100%;
   height:100%;
@@ -29,210 +32,425 @@ canvas{
 
 button{
   font:inherit;
+  user-select:none;
 }
+
+/* =========================
+   MENU
+========================= */
 
 #menu{
   position:fixed;
   inset:0;
-  z-index:20;
+  z-index:50;
+
   display:flex;
   align-items:center;
   justify-content:center;
+
   color:white;
-  background:linear-gradient(#17202ddd,#000f);
+
+  background:
+    linear-gradient(
+      rgba(20,15,10,.72),
+      rgba(0,0,0,.94)
+    );
 }
 
 #menuBox{
-  width:min(92%,390px);
-  padding:24px;
-  border-radius:20px;
-  background:#171717ee;
+  width:min(92%,400px);
+
+  padding:25px;
+
+  border-radius:22px;
+
+  background:
+    rgba(22,22,22,.95);
+
+  border:1px solid #ffffff22;
+
   text-align:center;
-  box-shadow:0 10px 40px #000;
+
+  box-shadow:
+    0 15px 50px #000;
+}
+
+#menuBox h1{
+  margin:0 0 8px;
+  font-size:30px;
+}
+
+#menuBox p{
+  color:#ccc;
 }
 
 .modeButton,
 #readyButton{
+
   width:100%;
-  padding:14px;
+
+  padding:15px;
+
   margin:7px 0;
+
   border:0;
-  border-radius:12px;
+
+  border-radius:13px;
+
   color:white;
-  background:#8a5a25;
+
   font-weight:bold;
+
+  background:#795126;
+
+}
+
+.modeButton:active,
+#readyButton:active{
+  transform:scale(.97);
+}
+
+.modeButton.selected{
+  background:#b8772c;
+  box-shadow:
+    0 0 0 2px #fff6;
 }
 
 #readyButton{
-  background:#1877d2;
+  margin-top:15px;
+  background:#1676d2;
 }
 
 #roomInfo{
-  margin:14px 0;
+  margin-top:15px;
+  min-height:55px;
   line-height:1.6;
+  color:#ddd;
 }
+
+/* =========================
+   HUD
+========================= */
 
 #hud{
   position:fixed;
   inset:0;
-  z-index:5;
-  color:white;
-  pointer-events:none;
+
+  z-index:10;
+
   display:none;
+
+  color:white;
+
+  pointer-events:none;
 }
 
 #title{
   position:absolute;
+
   top:10px;
   left:10px;
+
   font-weight:bold;
-  text-shadow:0 2px 5px #000;
+
+  text-shadow:
+    0 2px 5px #000;
 }
 
 #status{
   position:absolute;
-  top:38px;
+
+  top:36px;
   left:10px;
+
   font-size:13px;
-  text-shadow:0 2px 5px #000;
+
+  text-shadow:
+    0 2px 5px #000;
 }
 
 #team{
   position:absolute;
-  top:60px;
+
+  top:57px;
   left:10px;
+
   font-weight:bold;
-  text-shadow:0 2px 5px #000;
+
+  text-shadow:
+    0 2px 5px #000;
 }
 
 #weapon{
   position:absolute;
+
   top:10px;
   right:10px;
+
   text-align:right;
-  text-shadow:0 2px 5px #000;
+
+  text-shadow:
+    0 2px 5px #000;
+}
+
+#weaponName{
+  font-size:14px;
 }
 
 #ammo{
-  font-size:22px;
+  font-size:24px;
   font-weight:bold;
 }
 
 #health{
   position:absolute;
+
   left:18px;
-  bottom:20px;
+  bottom:18px;
+
   padding:9px 13px;
+
   border-radius:10px;
+
   background:#000b;
+
+  font-weight:bold;
 }
+
+/* =========================
+   CROSSHAIR
+========================= */
 
 #crosshair{
   position:absolute;
+
   left:50%;
   top:50%;
-  width:22px;
-  height:22px;
-  transform:translate(-50%,-50%);
+
+  width:26px;
+  height:26px;
+
+  transform:
+    translate(-50%,-50%);
 }
 
-#crosshair:before,
-#crosshair:after{
+#crosshair::before,
+#crosshair::after{
+
   content:"";
+
   position:absolute;
+
   background:white;
-  box-shadow:0 0 3px black;
+
+  box-shadow:
+    0 0 4px #000;
+
 }
 
-#crosshair:before{
-  width:22px;
+#crosshair::before{
+
+  width:24px;
   height:2px;
-  top:10px;
+
+  left:1px;
+  top:12px;
+
 }
 
-#crosshair:after{
+#crosshair::after{
+
   width:2px;
-  height:22px;
-  left:10px;
+  height:24px;
+
+  left:12px;
+  top:1px;
+
 }
+
+/* =========================
+   JOYSTICK
+========================= */
 
 #joystick{
+
   position:absolute;
+
   left:20px;
   bottom:20px;
-  width:115px;
-  height:115px;
-  border:2px solid #ffffff55;
+
+  width:120px;
+  height:120px;
+
+  border:
+    2px solid #ffffff44;
+
   border-radius:50%;
-  background:#ffffff10;
+
+  background:#ffffff0d;
+
   pointer-events:auto;
+
 }
 
 #stick{
+
   position:absolute;
-  left:31px;
-  top:31px;
+
+  left:33px;
+  top:33px;
+
   width:50px;
   height:50px;
+
   border-radius:50%;
+
   background:#ffffffbb;
+
+  box-shadow:
+    0 3px 12px #0008;
+
 }
 
+/* =========================
+   ACTION BUTTONS
+========================= */
+
 .action{
+
   position:absolute;
+
   right:22px;
+
   width:82px;
   height:58px;
-  border:2px solid white;
-  border-radius:14px;
+
+  border:
+    2px solid #ffffff88;
+
+  border-radius:15px;
+
   color:white;
+
   font-weight:bold;
+
   pointer-events:auto;
+
+  background:#222b;
+
+}
+
+.action:active{
+  transform:scale(.93);
 }
 
 #fire{
-  bottom:25px;
-  width:88px;
-  height:88px;
+
+  right:18px;
+  bottom:22px;
+
+  width:92px;
+  height:92px;
+
   border-radius:50%;
-  background:#b92828dd;
+
+  background:
+    rgba(190,35,35,.85);
+
+  font-size:16px;
+
 }
 
 #reload{
+
   bottom:125px;
+
   background:#444d;
+
 }
 
 #switch{
-  bottom:195px;
+
+  bottom:193px;
+
   background:#333d;
+
 }
 
+/* =========================
+   MESSAGE
+========================= */
+
 #message{
+
   position:absolute;
+
   left:50%;
-  top:35%;
-  transform:translate(-50%,-50%);
-  font-size:30px;
-  font-weight:bold;
+  top:40%;
+
+  transform:
+    translate(-50%,-50%);
+
+  width:90%;
+
   text-align:center;
-  text-shadow:0 3px 8px #000;
+
+  font-size:30px;
+
+  font-weight:bold;
+
+  text-shadow:
+    0 3px 10px #000;
+
   display:none;
+
 }
 
 #message button{
+
   margin-top:18px;
-  padding:12px 20px;
+
+  padding:12px 22px;
+
   border:0;
-  border-radius:10px;
-  background:#1877d2;
+
+  border-radius:11px;
+
   color:white;
+
+  background:#1676d2;
+
   font-weight:bold;
+
 }
+
+/* =========================
+   HIT FLASH
+========================= */
+
+#damageFlash{
+
+  position:absolute;
+
+  inset:0;
+
+  background:
+    rgba(255,0,0,.25);
+
+  opacity:0;
+
+  pointer-events:none;
+
+}
+
 </style>
 </head>
 
 <body>
+
+<!-- =========================
+     MENU
+========================= -->
 
 <div id="menu">
 
@@ -240,28 +458,46 @@ button{
 
     <h1>🏰 Chittorgarh</h1>
 
-    <p>Online Team Battle</p>
+    <p>
+      Online Team Battle
+    </p>
 
-    <button class="modeButton" data-mode="1v1">
+    <button
+      class="modeButton"
+      data-mode="1v1">
+
       ⚔️ 1 VS 1
+
     </button>
 
-    <button class="modeButton" data-mode="2v2">
+    <button
+      class="modeButton"
+      data-mode="2v2">
+
       👥 2 VS 2
+
     </button>
 
     <div id="roomInfo">
+
       Mode: Select a mode<br>
       Players: 0
+
     </div>
 
     <button id="readyButton">
+
       READY
+
     </button>
 
   </div>
 
 </div>
+
+<!-- =========================
+     HUD
+========================= -->
 
 <div id="hud">
 
@@ -271,3 +507,1104 @@ button{
 
   <div id="status">
     Waiting...
+  </div>
+
+  <div id="team">
+    Team: -
+  </div>
+
+  <div id="weapon">
+
+    <div id="weaponName">
+      Pistol
+    </div>
+
+    <div id="ammo">
+      12 / 60
+    </div>
+
+  </div>
+
+  <div id="health">
+
+    ❤️ HP:
+    <span id="hp">
+      100
+    </span>
+
+  </div>
+
+  <div id="crosshair"></div>
+
+  <!-- MOBILE JOYSTICK -->
+
+  <div id="joystick">
+
+    <div id="stick"></div>
+
+  </div>
+
+  <!-- FIRE -->
+
+  <button
+    id="fire"
+    class="action">
+
+    FIRE
+
+  </button>
+
+  <!-- RELOAD -->
+
+  <button
+    id="reload"
+    class="action">
+
+    RELOAD
+
+  </button>
+
+  <!-- WEAPON SWITCH -->
+
+  <button
+    id="switch"
+    class="action">
+
+    SWITCH
+
+  </button>
+
+  <div id="damageFlash"></div>
+
+  <div id="message"></div>
+
+</div>
+
+<!-- =========================
+     SOCKET.IO
+========================= -->
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script type="module">
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+/* =====================================================
+   SOCKET
+===================================================== */
+
+const socket = io();
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let myId = null;
+
+let myTeam = null;
+
+let selectedMode = null;
+
+let ready = false;
+
+let gameStarted = false;
+
+let myHP = 100;
+
+const players = new Map();
+
+/* =====================================================
+   UI
+===================================================== */
+
+const menu =
+document.getElementById("menu");
+
+const hud =
+document.getElementById("hud");
+
+const roomInfo =
+document.getElementById("roomInfo");
+
+const readyButton =
+document.getElementById("readyButton");
+
+const statusText =
+document.getElementById("status");
+
+const teamText =
+document.getElementById("team");
+
+const weaponName =
+document.getElementById("weaponName");
+
+const ammoText =
+document.getElementById("ammo");
+
+const hpText =
+document.getElementById("hp");
+
+const damageFlash =
+document.getElementById("damageFlash");
+
+/* =====================================================
+   MODE SELECT
+===================================================== */
+
+document
+.querySelectorAll(".modeButton")
+.forEach(button => {
+
+  button.addEventListener(
+    "click",
+    () => {
+
+      document
+      .querySelectorAll(".modeButton")
+      .forEach(b =>
+        b.classList.remove("selected")
+      );
+
+      button.classList.add("selected");
+
+      selectedMode =
+        button.dataset.mode;
+
+      ready = false;
+
+      readyButton.textContent =
+        "READY";
+
+      socket.emit(
+        "selectMode",
+        selectedMode
+      );
+
+      roomInfo.innerHTML =
+        `Mode: <b>${selectedMode}</b><br>
+         Joining room...`;
+
+    }
+  );
+
+});
+
+/* =====================================================
+   READY
+===================================================== */
+
+readyButton.addEventListener(
+  "click",
+  () => {
+
+    if (!selectedMode) {
+
+      roomInfo.innerHTML =
+        "⚠️ Pehle 1 VS 1 ya 2 VS 2 select karo.";
+
+      return;
+
+    }
+
+    ready = !ready;
+
+    socket.emit(
+      "ready",
+      ready
+    );
+
+    readyButton.textContent =
+      ready
+      ? "CANCEL READY"
+      : "READY";
+
+  }
+);
+
+/* =====================================================
+   THREE.JS SCENE
+===================================================== */
+
+const scene =
+new THREE.Scene();
+
+scene.background =
+new THREE.Color(
+  0x91aebd
+);
+
+scene.fog =
+new THREE.Fog(
+  0x91aebd,
+  65,
+  180
+);
+
+/* =====================================================
+   CAMERA
+===================================================== */
+
+const camera =
+new THREE.PerspectiveCamera(
+  65,
+  innerWidth / innerHeight,
+  .1,
+  300
+);
+
+camera.position.set(
+  0,
+  7,
+  15
+);
+
+/* =====================================================
+   RENDERER
+===================================================== */
+
+const renderer =
+new THREE.WebGLRenderer({
+  antialias:true
+});
+
+renderer.setSize(
+  innerWidth,
+  innerHeight
+);
+
+renderer.setPixelRatio(
+  Math.min(
+    devicePixelRatio,
+    2
+  )
+);
+
+renderer.shadowMap.enabled = true;
+
+renderer.shadowMap.type =
+THREE.PCFSoftShadowMap;
+
+document.body.appendChild(
+  renderer.domElement
+);
+
+/* =====================================================
+   LIGHTS
+===================================================== */
+
+const hemi =
+new THREE.HemisphereLight(
+  0xffffff,
+  0x554433,
+  2
+);
+
+scene.add(hemi);
+
+const sun =
+new THREE.DirectionalLight(
+  0xffffff,
+  3
+);
+
+sun.position.set(
+  35,
+  80,
+  25
+);
+
+sun.castShadow = true;
+
+sun.shadow.mapSize.width =
+2048;
+
+sun.shadow.mapSize.height =
+2048;
+
+scene.add(sun);
+
+/* =====================================================
+   MATERIALS
+===================================================== */
+
+const groundMaterial =
+new THREE.MeshStandardMaterial({
+  color:0x806b52
+});
+
+const wallMaterial =
+new THREE.MeshStandardMaterial({
+  color:0x967858
+});
+
+const palaceMaterial =
+new THREE.MeshStandardMaterial({
+  color:0x9c7a57
+});
+
+const towerMaterial =
+new THREE.MeshStandardMaterial({
+  color:0x8b6c4b
+});
+
+/* =====================================================
+   MAP HELPERS
+===================================================== */
+
+function addBox(
+  x,
+  y,
+  z,
+  w,
+  h,
+  d,
+  material
+){
+
+  const mesh =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      w,
+      h,
+      d
+    ),
+    material
+  );
+
+  mesh.position.set(
+    x,
+    y + h / 2,
+    z
+  );
+
+  mesh.castShadow = true;
+
+  mesh.receiveShadow = true;
+
+  scene.add(mesh);
+
+  return mesh;
+
+}
+
+/* =====================================================
+   FORT GROUND
+===================================================== */
+
+const ground =
+new THREE.Mesh(
+  new THREE.CylinderGeometry(
+    75,
+    75,
+    3,
+    64
+  ),
+  groundMaterial
+);
+
+ground.position.y = -1.5;
+
+ground.receiveShadow = true;
+
+scene.add(ground);
+
+/* =====================================================
+   OUTER WALLS
+===================================================== */
+
+addBox(
+  0,
+  0,
+  -70,
+  150,
+  8,
+  6,
+  wallMaterial
+);
+
+addBox(
+  0,
+  0,
+  70,
+  150,
+  8,
+  6,
+  wallMaterial
+);
+
+addBox(
+  -70,
+  0,
+  0,
+  6,
+  8,
+  140,
+  wallMaterial
+);
+
+addBox(
+  70,
+  0,
+  0,
+  6,
+  8,
+  140,
+  wallMaterial
+);
+
+/* =====================================================
+   MAIN PALACES
+===================================================== */
+
+addBox(
+  -30,
+  0,
+  -25,
+  25,
+  16,
+  22,
+  palaceMaterial
+);
+
+addBox(
+  31,
+  0,
+  -22,
+  21,
+  14,
+  20,
+  palaceMaterial
+);
+
+addBox(
+  -27,
+  0,
+  30,
+  20,
+  12,
+  18,
+  palaceMaterial
+);
+
+addBox(
+  28,
+  0,
+  30,
+  20,
+  12,
+  18,
+  palaceMaterial
+);
+
+/* =====================================================
+   TOWERS
+===================================================== */
+
+const towers = [
+
+  [-48, -48],
+  [48, -48],
+  [-48, 48],
+  [48, 48],
+
+  [-20, 20],
+  [20, 20]
+
+];
+
+for (
+  const [x,z] of towers
+){
+
+  addBox(
+    x,
+    0,
+    z,
+    10,
+    20,
+    10,
+    towerMaterial
+  );
+
+}
+
+/* =====================================================
+   CENTRAL BUILDING
+===================================================== */
+
+addBox(
+  0,
+  0,
+  4,
+  18,
+  9,
+  16,
+  palaceMaterial
+);
+
+/* =====================================================
+   SMALL BUILDINGS
+===================================================== */
+
+for(
+  let i=0;
+  i<20;
+  i++
+){
+
+  const x =
+    Math.random()*105 - 52;
+
+  const z =
+    Math.random()*105 - 52;
+
+  if(
+    Math.abs(x)<12 &&
+    Math.abs(z)<12
+  ){
+    continue;
+  }
+
+  addBox(
+    x,
+    0,
+    z,
+    4 + Math.random()*3,
+    3 + Math.random()*2,
+    4 + Math.random()*3,
+    palaceMaterial
+  );
+
+}
+
+/* =====================================================
+   PLAYER MODEL
+===================================================== */
+
+function createPlayer(team){
+
+  const group =
+  new THREE.Group();
+
+  const teamColor =
+    team === "A"
+    ? 0x2388ff
+    : 0xff3030;
+
+  /* BODY */
+
+  const body =
+  new THREE.Mesh(
+    new THREE.CapsuleGeometry(
+      .62,
+      1.1,
+      6,
+      12
+    ),
+    new THREE.MeshStandardMaterial({
+      color:teamColor
+    })
+  );
+
+  body.position.y =
+    1.35;
+
+  body.castShadow = true;
+
+  group.add(body);
+
+  /* HEAD */
+
+  const head =
+  new THREE.Mesh(
+    new THREE.SphereGeometry(
+      .42,
+      16,
+      12
+    ),
+    new THREE.MeshStandardMaterial({
+      color:0xd29a70
+    })
+  );
+
+  head.position.y =
+    2.45;
+
+  head.castShadow = true;
+
+  group.add(head);
+
+  /* LEGS */
+
+  const legMaterial =
+  new THREE.MeshStandardMaterial({
+    color:0x242424
+  });
+
+  const leftLeg =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      .24,
+      .82,
+      .28
+    ),
+    legMaterial
+  );
+
+  leftLeg.position.set(
+    -.25,
+    .43,
+    0
+  );
+
+  leftLeg.castShadow = true;
+
+  group.add(leftLeg);
+
+  const rightLeg =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      .24,
+      .82,
+      .28
+    ),
+    legMaterial
+  );
+
+  rightLeg.position.set(
+    .25,
+    .43,
+    0
+  );
+
+  rightLeg.castShadow = true;
+
+  group.add(rightLeg);
+
+  /* ARMS */
+
+  const armMaterial =
+  new THREE.MeshStandardMaterial({
+    color:teamColor
+  });
+
+  const leftArm =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      .22,
+      .85,
+      .22
+    ),
+    armMaterial
+  );
+
+  leftArm.position.set(
+    -.82,
+    1.45,
+    0
+  );
+
+  leftArm.rotation.z =
+    -.22;
+
+  group.add(leftArm);
+
+  const rightArm =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      .22,
+      .85,
+      .22
+    ),
+    armMaterial
+  );
+
+  rightArm.position.set(
+    .82,
+    1.45,
+    0
+  );
+
+  rightArm.rotation.z =
+    .22;
+
+  group.add(rightArm);
+
+  /* GUN */
+
+  const gun =
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      .18,
+      .18,
+      .95
+    ),
+    new THREE.MeshStandardMaterial({
+      color:0x111111
+    })
+  );
+
+  gun.position.set(
+    .82,
+    1.38,
+    -.38
+  );
+
+  group.add(gun);
+
+  group.userData = {
+
+    leftLeg,
+    rightLeg,
+
+    leftArm,
+    rightArm,
+
+    gun,
+
+    walkTime:0,
+
+    muzzleFlash:null,
+
+    targetX:0,
+    targetZ:0
+
+  };
+
+  scene.add(group);
+
+  return group;
+
+}
+
+/* =====================================================
+   MUZZLE FLASH
+===================================================== */
+
+function muzzleFlash(player){
+
+  const data =
+  player.userData;
+
+  if(
+    data.muzzleFlash
+  ){
+
+    data.gun.remove(
+      data.muzzleFlash
+    );
+
+  }
+
+  const flash =
+  new THREE.Mesh(
+    new THREE.SphereGeometry(
+      .28,
+      8,
+      8
+    ),
+    new THREE.MeshBasicMaterial({
+      color:0xffc43d
+    })
+  );
+
+  flash.position.set(
+    0,
+    0,
+    -.58
+  );
+
+  data.gun.add(
+    flash
+  );
+
+  data.muzzleFlash =
+    flash;
+
+  setTimeout(
+    () => {
+
+      if(
+        flash.parent
+      ){
+
+        flash.parent.remove(
+          flash
+        );
+
+      }
+
+      data.muzzleFlash =
+        null;
+
+    },
+    80
+  );
+
+}
+
+/* =====================================================
+   HIT EFFECT
+===================================================== */
+
+function hitEffect(player){
+
+  const effect =
+  new THREE.Mesh(
+    new THREE.SphereGeometry(
+      .18,
+      8,
+      8
+    ),
+    new THREE.MeshBasicMaterial({
+      color:0xff3322,
+      transparent:true
+    })
+  );
+
+  effect.position.y =
+    1.4;
+
+  player.add(effect);
+
+  let scale = 1;
+
+  const timer =
+  setInterval(
+    () => {
+
+      scale += .22;
+
+      effect.scale.set(
+        scale,
+        scale,
+        scale
+      );
+
+      effect.material.opacity =
+        Math.max(
+          0,
+          1 - scale/4
+        );
+
+      if(
+        scale >= 4
+      ){
+
+        clearInterval(timer);
+
+        if(effect.parent){
+          effect.parent.remove(
+            effect
+          );
+        }
+
+      }
+
+    },
+    30
+  );
+
+}
+
+/* =====================================================
+   PLAYER ANIMATION
+===================================================== */
+
+function animatePlayer(
+  player,
+  moving,
+  delta
+){
+
+  const d =
+  player.userData;
+
+  if(moving){
+
+    d.walkTime +=
+      delta * 9;
+
+    const swing =
+      Math.sin(
+        d.walkTime
+      ) * .55;
+
+    d.leftLeg.rotation.x =
+      swing;
+
+    d.rightLeg.rotation.x =
+      -swing;
+
+    d.leftArm.rotation.x =
+      -swing * .55;
+
+    d.rightArm.rotation.x =
+      swing * .55;
+
+    player.position.y =
+      Math.abs(
+        Math.sin(
+          d.walkTime * 2
+        )
+      ) * .045;
+
+  }else{
+
+    d.leftLeg.rotation.x =
+      THREE.MathUtils.lerp(
+        d.leftLeg.rotation.x,
+        0,
+        .18
+      );
+
+    d.rightLeg.rotation.x =
+      THREE.MathUtils.lerp(
+        d.rightLeg.rotation.x,
+        0,
+        .18
+      );
+
+    d.leftArm.rotation.x =
+      THREE.MathUtils.lerp(
+        d.leftArm.rotation.x,
+        0,
+        .18
+      );
+
+    d.rightArm.rotation.x =
+      THREE.MathUtils.lerp(
+        d.rightArm.rotation.x,
+        0,
+        .18
+      );
+
+    player.position.y =
+      THREE.MathUtils.lerp(
+        player.position.y,
+        0,
+        .18
+      );
+
+  }
+
+}
+
+/* =====================================================
+   SOCKET EVENTS
+===================================================== */
+
+socket.on(
+  "init",
+  data => {
+
+    myId =
+      data.id;
+
+    statusText.textContent =
+      "Connected";
+
+  }
+);
+
+/* =====================================================
+   ROOM UPDATE
+===================================================== */
+
+socket.on(
+  "roomUpdate",
+  data => {
+
+    roomInfo.innerHTML =
+      `Mode: <b>${data.mode}</b><br>
+       Players: ${data.players}/${data.maxPlayers}<br>
+       Ready: ${data.ready}/${data.players}`;
+
+  }
+);
+
+/* =====================================================
+   MATCH START
+===================================================== */
+
+socket.on(
+  "matchStart",
+  data => {
+
+    gameStarted = true;
+
+    myTeam =
+      data.myTeam;
+
+    menu.style.display =
+      "none";
+
+    hud.style.display =
+      "block";
+
+    teamText.textContent =
+      `Team ${myTeam}`;
+
+    teamText.style.color =
+      myTeam === "A"
+      ? "#39a9ff"
+      : "#ff5555";
+
+    statusText.textContent =
+      `${data.mode} • MATCH STARTED`;
+
+    data.players.forEach(
+      p => {
+
+        updatePlayer(p);
+
+      }
+    );
+
+    const me =
+      players.get(myId);
+
+    if(me){
+
+      camera.position.set(
+        me.position.x,
+        7,
+        me.position.z + 15
+      );
+
+    }
+
+  }
+);
+
+/* =====================================================
+   UPDATE PLAYER
+===================================================== */
+
+function updatePlayer(data){
+
+  let player =
+    players.get(
+      data.id
+    );
+
+  if(!player){
+
+    player =
+      createPlayer(
+        data.team
+      );
+
+    players.set(
+      data.id,
+      player
+    );
+
+  }
+
+  player.visible =
+    data.alive !== false;
+
+  player.userData.
