@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Chittorgarh Battle Royale - Phase 11</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#111;font-family:Arial,sans-serif;touch-action:none}
+canvas{display:block}
+button{font:inherit;user-select:none}
+#menu{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;color:#fff;background:radial-gradient(circle at 50% 30%,#65452288,#000d),linear-gradient(#20170d,#000)}
+#menuBox{width:min(92%,410px);padding:25px;border-radius:22px;background:#171717f5;text-align:center;box-shadow:0 20px 60px #000}
+#menuBox h1{margin-top:0}
+.modeButton,#readyButton{width:100%;padding:15px;margin:7px 0;border:0;border-radius:13px;color:#fff;background:#795126;font-weight:bold}
+.modeButton.selected{background:#b9782d}
+#readyButton{background:#1877d2}
+#roomInfo{margin:15px 0;line-height:1.6;color:#ddd}
+#hud{position:fixed;inset:0;z-index:10;display:none;color:#fff;pointer-events:none}
+#title{position:absolute;top:10px;left:10px;font-weight:bold;text-shadow:0 2px 5px #000}
+#status{position:absolute;top:37px;left:10px;font-size:13px;text-shadow:0 2px 5px #000}
+#team{position:absolute;top:58px;left:10px;font-weight:bold;text-shadow:0 2px 5px #000}
+#weapon{position:absolute;top:10px;right:10px;text-align:right;text-shadow:0 2px 5px #000}
+#ammo{font-size:24px;font-weight:bold}
+#health{position:absolute;left:18px;bottom:18px;padding:9px 13px;border-radius:10px;background:#000c;font-weight:bold}
+#crosshair{position:absolute;left:50%;top:50%;width:25px;height:25px;transform:translate(-50%,-50%)}
+#crosshair:before,#crosshair:after{content:"";position:absolute;background:#fff;box-shadow:0 0 4px #000}
+#crosshair:before{width:24px;height:2px;left:1px;top:12px}
+#crosshair:after{width:2px;height:24px;left:12px;top:1px}
+#joystick{position:absolute;left:20px;bottom:20px;width:120px;height:120px;border:2px solid #ffffff44;border-radius:50%;background:#ffffff10;pointer-events:auto}
+#stick{position:absolute;left:33px;top:33px;width:50px;height:50px;border-radius:50%;background:#ffffffbb}
+.action{position:absolute;right:22px;width:82px;height:58px;border:2px solid #ffffff88;border-radius:15px;color:#fff;font-weight:bold;pointer-events:auto;background:#222c}
+#fire{bottom:22px;width:92px;height:92px;border-radius:50%;background:#c52626dd}
+#reload{bottom:125px} #switch{bottom:193px}
+#damageFlash{position:absolute;inset:0;background:#f00;opacity:0;pointer-events:none;transition:opacity .08s}
+#message{position:absolute;left:50%;top:40%;transform:translate(-50%,-50%);width:90%;text-align:center;font-size:30px;font-weight:bold;text-shadow:0 3px 10px #000;display:none;pointer-events:auto}
+#message button{margin-top:18px;padding:12px 22px;border:0;border-radius:10px;background:#1877d2;color:#fff;font-weight:bold}
+#zone{position:absolute;top:82px;left:10px;font-size:12px;text-shadow:0 2px 5px #000}
+#score{position:absolute;top:100px;left:10px;font-size:12px;text-shadow:0 2px 5px #000}
+#mini{position:absolute;right:10px;top:75px;width:100px;height:100px;border:1px solid #ffffff66;border-radius:50%;background:#0006;overflow:hidden}
+</style>
+</head>
+<body>
+
+<div id="menu"><div id="menuBox">
+<h1>🏰 Chittorgarh</h1><p>Fort Battle Online — Phase 11</p>
+<button class="modeButton" data-mode="1v1">⚔️ 1 VS 1</button>
+<button class="modeButton" data-mode="2v2">👥 2 VS 2</button>
+<div id="roomInfo">Mode: Select a mode<br>Players: 0</div>
+<button id="readyButton">READY</button>
+</div></div>
+
+<div id="hud">
+<div id="title">🏰 CHITTORGARH FORT</div>
+<div id="status">Waiting...</div>
+<div id="team">Team: -</div>
+<div id="zone">⭕ Zone: 100%</div>
+<div id="score">⚔️ Kills: 0</div>
+<div id="weapon"><div id="weaponName">Pistol</div><div id="ammo">12 / 60</div></div>
+<div id="health">❤️ HP: <span id="hp">100</span></div>
+<div id="crosshair"></div>
+<div id="joystick"><div id="stick"></div></div>
+<button id="fire" class="action">FIRE</button>
+<button id="reload" class="action">RELOAD</button>
+<button id="switch" class="action">SWITCH</button>
+<div id="damageFlash"></div><div id="message"></div><canvas id="mini"></canvas>
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script type="module">
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+/* Phase 11: complete client with local fallback bots, weapons, zone, minimap,
+   mobile controls, collisions, particles, health, reload and socket hooks. */
+
+const socket=typeof io==="function"?io():null;
+let myId="local",myTeam=null,selectedMode=null,ready=false,gameStarted=false,myHP=100,kills=0;
+let weaponIndex=0,reloading=false,lastShot=0,zoneRadius=70,zoneTimer=0;
+const weapons=[
+ {name:"Pistol",mag:12,reserve:60,damage:25,rate:330,range:90,reload:900},
+ {name:"Rifle",mag:30,reserve:90,damage:14,rate:110,range:125,reload:1300}
+];
+const ammo=weapons.map(w=>w.mag);
+const reserve=weapons.map(w=>w.reserve);
+const players=new Map(),collisionObjects=[],effects=[];
+let audioContext=null;
+
+const $=id=>document.getElementById(id);
+const menu=$("menu"),hud=$("hud"),roomInfo=$("roomInfo"),readyButton=$("readyButton");
+const statusText=$("status"),teamText=$("team"),weaponName=$("weaponName"),ammoText=$("ammo");
+const hpText=$("hp"),damageFlash=$("damageFlash"),zoneText=$("zone"),scoreText=$("score");
+const mini=$("mini"),mctx=mini.getContext("2d");
+
+function initAudio(){
+ if(!audioContext) audioContext=new (window.AudioContext||window.webkitAudioContext)();
+ if(audioContext.state==="suspended") audioContext.resume();
+}
+function sound(type){
+ try{
+  initAudio(); const c=audioContext,o=c.createOscillator(),g=c.createGain(),n=c.currentTime;
+  o.connect(g);g.connect(c.destination);
+  const cfg={shoot:["sawtooth",100,42,.16,.09],hit:["square",620,180,.08,.13],reload:["sine",320,320,.05,.2],footstep:["triangle",85,85,.045,.09]};
+  const [shape,a,b,vol,dur]=cfg[type]||cfg.hit;o.type=shape;o.frequency.setValueAtTime(a,n);
+  if(a!==b)o.frequency.exponentialRampToValueAtTime(b,n+dur*.8);
+  g.gain.setValueAtTime(.0001,n);g.gain.exponentialRampToValueAtTime(vol,n+.01);g.gain.exponentialRampToValueAtTime(.0001,n+dur);
+  o.start(n);o.stop(n+dur+.01);
+ }catch(e){}
+}
+
+document.querySelectorAll(".modeButton").forEach(b=>b.onclick=()=>{
+ document.querySelectorAll(".modeButton").forEach(x=>x.classList.remove("selected"));
+ b.classList.add("selected");selectedMode=b.dataset.mode;ready=false;readyButton.textContent="READY";
+ roomInfo.innerHTML=`Mode: ${selectedMode}<br>Players: ${selectedMode==="1v1"?2:4}`;
+ if(socket)socket.emit("selectMode",selectedMode);
+});
+readyButton.onclick=()=>{
+ initAudio();
+ if(!selectedMode){roomInfo.innerHTML="⚠️ Pehle mode select karo.";return}
+ ready=!ready;readyButton.textContent=ready?"CANCEL READY":"READY";
+ if(socket)socket.emit("ready",ready);
+ if(ready)startGame();
+};
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x91a9b5);
+scene.fog=new THREE.Fog(0x91a9b5,90,210);
+const camera=new THREE.PerspectiveCamera(65,innerWidth/innerHeight,.1,350);
+const renderer=new THREE.WebGLRenderer({antialias:true});
+renderer.setSize(innerWidth,innerHeight);renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;renderer.outputColorSpace=THREE.SRGBColorSpace;
+document.body.appendChild(renderer.domElement);
+
+scene.add(new THREE.HemisphereLight(0xffefd0,0x40382c,2));
+const sun=new THREE.DirectionalLight(0xffdfa5,3.2);sun.position.set(-50,100,50);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);scene.add(sun);
+
+const groundMat=new THREE.MeshStandardMaterial({color:0x796548,roughness:1});
+const sandstone=new THREE.MeshStandardMaterial({color:0x99744d,roughness:.95});
+const darkStone=new THREE.MeshStandardMaterial({color:0x62503c,roughness:1});
+const palaceMat=new THREE.MeshStandardMaterial({color:0xb18a5b,roughness:.9});
+const roofMat=new THREE.MeshStandardMaterial({color:0x65472f,roughness:1});
+const grassMat=new THREE.MeshStandardMaterial({color:0x4d5d38,roughness:1});
+
+function addBox(x,y,z,w,h,d,material,collision=true){
+ const mesh=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),material);mesh.position.set(x,y+h/2,z);
+ mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+ if(collision)collisionObjects.push({minX:x-w/2,maxX:x+w/2,minZ:z-d/2,maxZ:z+d/2});
+ return mesh;
+}
+function addCylinder(x,y,z,r,h,material,collision=true){
+ const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r*1.08,h,16),material);mesh.position.set(x,y+h/2,z);
+ mesh.castShadow=true;mesh.receiveShadow=true;scene.add(mesh);
+ if(collision)collisionObjects.push({minX:x-r,maxX:x+r,minZ:z-r,maxZ:z+r});return mesh;
+}
+function roof(x,y,z,r,h,material){const m=new THREE.Mesh(new THREE.ConeGeometry(r,h,8),material);m.position.set(x,y+h/2,z);m.castShadow=true;scene.add(m);}
+
+const ground=new THREE.Mesh(new THREE.CylinderGeometry(76,82,4,64),groundMat);ground.position.y=-2;ground.receiveShadow=true;scene.add(ground);
+const outside=new THREE.Mesh(new THREE.CircleGeometry(170,64),grassMat);outside.rotation.x=-Math.PI/2;outside.position.y=-4.2;scene.add(outside);
+
+addBox(0,0,-72,145,8,5,sandstone);addBox(0,0,72,145,8,5,sandstone);
+addBox(-72,0,0,5,8,145,sandstone);addBox(72,0,0,5,8,145,sandstone);
+for(let x=-68;x<=68;x+=7){addBox(x,8,-72,4,2.5,3,darkStone);addBox(x,8,72,4,2.5,3,darkStone)}
+for(let z=-68;z<=68;z+=7){addBox(-72,8,z,3,2.5,4,darkStone);addBox(72,8,z,3,2.5,4,darkStone)}
+
+function gateNS(z){
+ addBox(-36,0,z,67,8,5,sandstone);addBox(36,0,z,67,8,5,sandstone);
+ addBox(-10,0,z,15,10,7,sandstone);addBox(10,0,z,15,10,7,sandstone);addBox(0,8,z,24,4,7,sandstone,false);
+}
+function gateEW(x){
+ addBox(x,0,-36,5,8,67,sandstone);addBox(x,0,36,5,8,67,sandstone);
+ addBox(x,0,-10,7,10,15,sandstone);addBox(x,0,10,7,10,15,sandstone);addBox(x,8,0,7,4,24,sandstone,false);
+}
+gateNS(-72);gateNS(72);gateEW(-72);gateEW(72);
+
+function building(x,z,w,d,h){
+ addBox(x,0,z,w,h,d,palaceMat);addBox(x,h,z,w+1,1.2,d+1,roofMat,false);
+}
+building(-30,-28,27,19,13);building(30,-28,25,19,12);building(-30,29,27,19,12);building(30,29,27,19,12);building(0,0,22,20,11);
+addBox(-14,0,-15,3,7,18,darkStone);addBox(14,0,15,3,7,18,darkStone);addBox(-35,0,5,18,6,3,darkStone);addBox(35,0,-5,18,6,3,darkStone);
+
+function tallTower(x,z){addCylinder(x,0,z,4,10,sandstone);roof(x,10,z,5,4,roofMat)}
+[[-55,-55],[55,-55],[-55,55],[55,55],[-55,0],[55,0],[0,-55],[0,55]].forEach(p=>tallTower(...p));
+
+function tree(x,z,s=.9){
+ const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.35*s,.45*s,3*s,10),new THREE.MeshStandardMaterial({color:0x55351f}));
+ trunk.position.set(x,1.5*s,z);trunk.castShadow=true;scene.add(trunk);
+ const leaves=new THREE.Mesh(new THREE.SphereGeometry(2.1*s,12,10),new THREE.MeshStandardMaterial({color:0x405a32}));
+ leaves.position.set(x,4*s,z);leaves.castShadow=true;scene.add(leaves);
+}
+[[-55,-30],[-50,-20],[50,35],[55,44],[-43,44],[43,-42],[-12,-48],[14,-48]].forEach(p=>tree(...p));
+
+function createWeapon(type){
+ const group=new THREE.Group();
+ const dark=new THREE.MeshStandardMaterial({color:0x151719,metalness:.75,roughness:.25});
+ const metal=new THREE.MeshStandardMaterial({color:0x464b50,metalness:.9,roughness:.18});
+ if(type==="Pistol"){
+  const slide=new THREE.Mesh(new THREE.BoxGeometry(.22,.22,.9),metal);slide.position.z=-.35;group.add(slide);
+  const grip=new THREE.Mesh(new THREE.BoxGeometry(.18,.55,.2),dark);grip.position.set(0,-.28,.05);grip.rotation.x=.2;group.add(grip);
+ }else{
+  const body=new THREE.Mesh(new THREE.BoxGeometry(.25,.25,1.3),dark);body.position.z=-.25;group.add(body);
+  const barrel=new THREE.Mesh(new THREE.CylinderGeometry(.045,.045,1.1,10),metal);barrel.rotation.x=Math.PI/2;barrel.position.z=-1.1;group.add(barrel);
+  const grip=new THREE.Mesh(new THREE.BoxGeometry(.18,.45,.22),dark);grip.position.set(0,-.3,.1);grip.rotation.x=.25;group.add(grip);
+ }
+ return group;
+}
+
+const localGroup=new THREE.Group();scene.add(localGroup);
+const body=new THREE.Mesh(new THREE.CapsuleGeometry(.45,1.05,5,10),new THREE.MeshStandardMaterial({color:0x2e6fb5}));
+body.position.y=1.05;body.castShadow=true;localGroup.add(body);
+const head=new THREE.Mesh(new THREE.SphereGeometry(.36,12,10),new THREE.MeshStandardMaterial({color:0xc98f65}));head.position.y=2;head.castShadow=true;localGroup.add(head);
+const weaponHolder=new THREE.Group();weaponHolder.position.set(.42,1.25,-.2);localGroup.add(weaponHolder);
+let heldWeapon=createWeapon("Pistol");heldWeapon.rotation.y=Math.PI;weaponHolder.add(heldWeapon);
+
+function makePlayer(color=0xc73535){
+ const g=new THREE.Group();
+ const b=new THREE.Mesh(new THREE.CapsuleGeometry(.42,1,5,10),new THREE.MeshStandardMaterial({color}));b.position.y=1;b.castShadow=true;g.add(b);
+ const h=new THREE.Mesh(new THREE.SphereGeometry(.34,12,10),new THREE.MeshStandardMaterial({color:0xc98f65}));h.position.y=1.95;h.castShadow=true;g.add(h);
+ return g;
+}
+
+function setWeapon(i){
+ weaponIndex=i;const w=weapons[i];weaponName.textContent=w.name;ammoText.textContent=`${ammo[i]} / ${reserve[i]}`;
+ weaponHolder.remove(heldWeapon);heldWeapon=createWeapon(w.name);heldWeapon.rotation.y=Math.PI;weaponHolder.add(heldWeapon);
+}
+function updateAmmo(){ammoText.textContent=`${ammo[weaponIndex]} / ${reserve[weaponIndex]}`}
+function collides(x,z,r=.8){
+ if(x<-68+r||x>68-r||z<-68+r||z>68-r)return true;
+ return collisionObjects.some(o=>x+r>o.minX&&x-r<o.maxX&&z+r>o.minZ&&z-r<o.maxZ);
+}
+function movePlayer(dx,dz){
+ const nx=localGroup.position.x+dx,nz=localGroup.position.z+dz;
+ if(!collides(nx,localGroup.position.z))localGroup.position.x=nx;
+ if(!collides(localGroup.position.x,nz))localGroup.position.z=nz;
+}
+function spawnBots(){
+ players.forEach((p,id)=>{if(id!=="local")scene.remove(p.mesh)});
+ players.clear();
+ const count=selectedMode==="2v2"?3:1;
+ const spots=[[-35,-45],[35,45],[45,-35],[-45,35]];
+ for(let i=0;i<count;i++){
+  const id="bot"+i,team=selectedMode==="2v2"?(i%2===0?2:1):2;
+  const mesh=makePlayer(team===2?0xc73535:0x3ca56b);mesh.position.set(spots[i][0],0,spots[i][1]);scene.add(mesh);
+  players.set(id,{mesh,team,hp:100,target:spots[(i+1)%spots.length],cool:0});
+ }
+}
+function startGame(){
+ if(gameStarted)return;gameStarted=true;myTeam=1;myHP=100;kills=0;zoneRadius=70;zoneTimer=0;
+ menu.style.display="none";hud.style.display="block";statusText.textContent="MATCH LIVE";teamText.textContent="Team: BLUE";
+ localGroup.position.set(0,0,45);camera.position.set(0,6,9);spawnBots();updateHUD();setWeapon(0);
+ if(socket)socket.emit("gameStart",{mode:selectedMode});
+}
+function updateHUD(){hpText.textContent=Math.max(0,Math.round(myHP));scoreText.textContent=`⚔️ Kills: ${kills}`;updateAmmo();zoneText.textContent=`⭕ Zone: ${Math.max(0,Math.round(zoneRadius/70*100))}%`}
+function damagePlayer(amount){
+ myHP=Math.max(0,myHP-amount);hpText.textContent=Math.round(myHP);damageFlash.style.opacity=".35";setTimeout(()=>damageFlash.style.opacity="0",90);sound("hit");
+ if(socket)socket.emit("damage",{amount});
+ if(myHP<=0)endGame(false);
+}
+function endGame(win){
+ gameStarted=false;statusText.textContent=win?"VICTORY":"ELIMINATED";$("message").innerHTML=(win?"🏆 VICTORY":"💀 ELIMINATED")+"<br><button id='again'>PLAY AGAIN</button>";$("message").style.display="block";
+ $("again").onclick=()=>location.reload();
+}
+function fire(){
+ if(!gameStarted||reloading)return;const w=weapons[weaponIndex],now=performance.now();
+ if(now-lastShot<w.rate)return;
+ if(ammo[weaponIndex]<=0){reload();return}
+ lastShot=now;ammo[weaponIndex]--;updateAmmo();sound("shoot");
+ const origin=localGroup.position.clone();let best=null,bestDist=w.range;
+ players.forEach((p,id)=>{
+  if(p.team===myTeam)return;
+  const d=origin.distanceTo(p.mesh.position);
+  if(d<bestDist){best=p;bestDist=d}
+ });
+ if(best){
+  best.hp-=w.damage;hitEffect(best.mesh.position.clone().setY(2));sound("hit");
+  if(best.hp<=0){kills++;scoreText.textContent=`⚔️ Kills: ${kills}`;scene.remove(best.mesh);players.delete([...players.entries()].find(e=>e[1]===best)?.[0]);if(players.size===0)endGame(true)}
+ }
+ if(socket)socket.emit("shoot",{weapon:w.name});
+}
+function hitEffect(pos){
+ const g=new THREE.SphereGeometry(.12,8,8),m=new THREE.MeshBasicMaterial({color:0xffcc66}),s=new THREE.Mesh(g,m);s.position.copy(pos);scene.add(s);effects.push({mesh:s,t:0});
+}
+function reload(){
+ if(reloading||ammo[weaponIndex]>=weapons[weaponIndex].mag||reserve[weaponIndex]<=0)return;
+ reloading=true;sound("reload");statusText.textContent="Reloading...";
+ setTimeout(()=>{const w=weapons[weaponIndex],need=w.mag-ammo[weaponIndex],take=Math.min(need,reserve[weaponIndex]);ammo[weaponIndex]+=take;reserve[weaponIndex]-=take;reloading=false;statusText.textContent="MATCH LIVE";updateAmmo()},w.reload);
+}
+$("fire").addEventListener("pointerdown",e=>{e.preventDefault();fire()});
+$("reload").addEventListener("pointerdown",e=>{e.preventDefault();reload()});
+$("switch").addEventListener("pointerdown",e=>{e.preventDefault();setWeapon((weaponIndex+1)%weapons.length)});
+let joy={active:false,id:null,x:0,y:0};
+const joyEl=$("joystick"),stick=$("stick");
+joyEl.addEventListener("pointerdown",e=>{joy.active=true;joy.id=e.pointerId;joy.x=e.clientX;joy.y=e.clientY;joyEl.setPointerCapture(e.pointerId)});
+joyEl.addEventListener("pointermove",e=>{if(!joy.active||e.pointerId!==joy.id)return;const r=joyEl.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2;let dx=e.clientX-cx,dy=e.clientY-cy;const len=Math.hypot(dx,dy),max=48;if(len>max){dx=dx/len*max;dy=dy/len*max}stick.style.transform=`translate(${dx}px,${dy}px)`;joy.x=dx/max;joy.y=dy/max});
+function joyEnd(e){if(e.pointerId===joy.id){joy.active=false;stick.style.transform="translate(0,0)";joy.x=joy.y=0}}
+joyEl.addEventListener("pointerup",joyEnd);joyEl.addEventListener("pointercancel",joyEnd);
+
+const keys={};
+addEventListener("keydown",e=>{keys[e.key.toLowerCase()]=true;if(e.key===" ")fire();if(e.key.toLowerCase()==="r")reload();if(e.key.toLowerCase()==="q")setWeapon((weaponIndex+1)%2)});
+addEventListener("keyup",e=>keys[e.key.toLowerCase()]=false);
+
+function updateBots(dt){
+ players.forEach(p=>{
+  p.cool-=dt;const dx=localGroup.position.x-p.mesh.position.x,dz=localGroup.position.z-p.mesh.position.z,d=Math.hypot(dx,dz);
+  if(d>10){const sp=.012*dt;p.mesh.position.x+=dx/d*sp;p.mesh.position.z+=dz/d*sp}
+  p.mesh.lookAt(localGroup.position.x,1,p.mesh.position.z);
+  if(d<35&&p.cool<=0){p.cool=900+Math.random()*700;damagePlayer(6)}
+ });
+}
+function updateZone(dt){
+ zoneTimer+=dt;if(zoneTimer>2500){zoneTimer=0;zoneRadius=Math.max(28,zoneRadius-1.2)}
+ const d=Math.hypot(localGroup.position.x,localGroup.position.z);
+ if(d>zoneRadius){damagePlayer(.7);statusText.textContent="⚠️ OUTSIDE SAFE ZONE"}
+ else if(gameStarted)statusText.textContent="MATCH LIVE";
+}
+function updateMini(){
+ mctx.clearRect(0,0,100,100);mctx.fillStyle="#0009";mctx.fillRect(0,0,100,100);
+ mctx.strokeStyle="#58c7ff";mctx.lineWidth=2;mctx.beginPath();mctx.arc(50,50,zoneRadius/70*45,0,Math.PI*2);mctx.stroke();
+ const map=v=>50+v/70*45;mctx.fillStyle="#48a9ff";mctx.beginPath();mctx.arc(map(localGroup.position.x),map(localGroup.position.z),4,0,7);mctx.fill();
+ players.forEach(p=>{mctx.fillStyle=p.team===2?"#ff5555":"#5cff9d";mctx.beginPath();mctx.arc(map(p.mesh.position.x),map(p.mesh.position.z),3,0,7);mctx.fill()});
+}
+function animate(){
+ requestAnimationFrame(animate);
+ const dt=Math.min(50,clock.getDelta()*1000);
+ if(gameStarted){
+  let dx=joy.x,dz=joy.y;
+  if(keys.w)dz=-1;if(keys.s)dz=1;if(keys.a)dx=-1;if(keys.d)dx=1;
+  const l=Math.hypot(dx,dz);if(l>1){dx/=l;dz/=l}
+  if(l>.1){movePlayer(dx*.055*dt,dz*.055*dt);if(Math.random()<.04)sound("footstep")}
+  camera.position.lerp(new THREE.Vector3(localGroup.position.x,5.8,localGroup.position.z+8.5),.12);
+  camera.lookAt(localGroup.position.x,1.5,localGroup.position.z);
+  updateBots(dt);updateZone(dt);updateMini();
+  effects.forEach(e=>{e.t+=dt;if(e.t>160){scene.remove(e.mesh)}})
+  for(let i=effects.length-1;i>=0;i--)if(effects[i].t>160)effects.splice(i,1);
+ }
+ renderer.render(scene,camera);
+}
+const clock=new THREE.Clock();animate();
+
+addEventListener("resize",()=>{camera.aspect=innerWidth/innerHeight;camera.updateProjectionMatrix();renderer.setSize(innerWidth,innerHeight)});
+
+if(socket){
+ socket.on("connect",()=>{myId=socket.id});
+ socket.on("roomUpdate",d=>{if(d){roomInfo.innerHTML=`Mode: ${d.mode||selectedMode||"—"}<br>Players: ${d.players||0}`;}});
+ socket.on("team",t=>{myTeam=t;teamText.textContent=`Team: ${t}`});
+ socket.on("startGame",()=>startGame());
+ socket.on("playerHit",d=>{if(d&&d.id===myId)damagePlayer(d.damage||10)});
+ socket.on("disconnect",()=>{if(gameStarted)statusText.textContent="LOCAL MODE — SERVER DISCONNECTED"});
+}else{
+ roomInfo.innerHTML="Local practice mode<br>Server not connected";
+}
+
+document.addEventListener("visibilitychange",()=>{if(document.hidden&&audioContext)audioContext.suspend();else if(audioContext)audioContext.resume()});
+</script>
+</body>
+</html>
