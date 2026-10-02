@@ -165,3 +165,109 @@ button{
   border:2px solid #ffffff55;
   border-radius:50%;
   background:#ffffff10;
+  pointer-events:auto;
+}
+
+#stick{
+  position:absolute;
+  left:31px;
+  top:31px;
+  width:50px;
+  height:50px;
+  border-radius:50%;
+  background:#ffffffbb;
+}
+
+.action{
+  position:absolute;
+  right:22px;
+  width:82px;
+  height:58px;
+  border:2px solid white;
+  border-radius:14px;
+  color:white;
+  font-weight:bold;
+  pointer-events:auto;
+}
+
+#fire{
+  bottom:25px;
+  width:88px;
+  height:88px;
+  border-radius:50%;
+  background:#b92828dd;
+}
+
+#reload{
+  bottom:125px;
+  background:#444d;
+}
+
+#switch{
+  bottom:195px;
+  background:#333d;
+}
+
+#message{
+  position:absolute;
+  left:50%;
+  top:35%;
+  transform:translate(-50%,-50%);
+  font-size:30px;
+  font-weight:bold;
+  text-align:center;
+  text-shadow:0 3px 8px #000;
+  display:none;
+}
+
+#message button{
+  margin-top:18px;
+  padding:12px 20px;
+  border:0;
+  border-radius:10px;
+  background:#1877d2;
+  color:white;
+  font-weight:bold;
+}
+</style>
+</head>
+
+<body>
+
+<div id="menu">
+
+  <div id="menuBox">
+
+    <h1>🏰 Chittorgarh</h1>
+
+    <p>Online Team Battle</p>
+
+    <button class="modeButton" data-mode="1v1">
+      ⚔️ 1 VS 1
+    </button>
+
+    <button class="modeButton" data-mode="2v2">
+      👥 2 VS 2
+    </button>
+
+    <div id="roomInfo">
+      Mode: Select a mode<br>
+      Players: 0
+    </div>
+
+    <button id="readyButton">
+      READY
+    </button>
+
+  </div>
+
+</div>
+
+<div id="hud">
+
+  <div id="title">
+    🏰 CHITTORGARH
+  </div>
+
+  <div id="status">
+    Waiting...
