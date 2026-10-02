@@ -2,54 +2,45 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 
-const app=express();
+const app = express();
 
-const server=
+const server =
   http.createServer(app);
 
-const io=
+const io =
   new Server(server);
 
 app.use(
   express.static("public")
 );
 
-const players=
-  new Map();
+/* =========================
+   DATA
+========================= */
 
-const rooms=
-  new Map();
+const players = new Map();
+const rooms = new Map();
 
-const spawnPoints=[
-  {x:-45,z:-30},
-  {x:35,z:-25},
-  {x:-30,z:35},
-  {x:40,z:35}
+const spawnPoints = [
+  { x:-45, z:-30 },
+  { x:45, z:30 },
+  { x:-45, z:30 },
+  { x:45, z:-30 }
 ];
 
-const modes={
-  "1v1":2,
-  "2v2":4
+const modes = {
+  "1v1": 2,
+  "2v2": 4
 };
 
-function getRoom(mode){
+/* =========================
+   ROOM
+========================= */
 
-  for(
-    const room of rooms.values()
-  ){
+function createRoom(mode){
 
-    if(
-      room.mode===mode &&
-      !room.started &&
-      room.players.size<
-      room.maxPlayers
-    ){
+  const room = {
 
-      return room;
-    }
-  }
-
-  const room={
     id:
       `${mode}-${Date.now()}-${Math.random()
       .toString(36)
@@ -65,6 +56,7 @@ function getRoom(mode){
     ready:new Set(),
 
     started:false
+
   };
 
   rooms.set(
@@ -74,6 +66,31 @@ function getRoom(mode){
 
   return room;
 }
+
+function findRoom(mode){
+
+  for(
+    const room of rooms.values()
+  ){
+
+    if(
+      room.mode===mode &&
+      !room.started &&
+      room.players.size<
+      room.maxPlayers
+    ){
+
+      return room;
+    }
+
+  }
+
+  return createRoom(mode);
+}
+
+/* =========================
+   ROOM UPDATE
+========================= */
 
 function sendRoomUpdate(room){
 
@@ -86,7 +103,12 @@ function sendRoomUpdate(room){
       ready:room.ready.size
     }
   );
+
 }
+
+/* =========================
+   REMOVE FROM ROOM
+========================= */
 
 function removeFromRoom(socket){
 
@@ -100,6 +122,7 @@ function removeFromRoom(socket){
     );
 
   if(!room){
+    socket.roomId=null;
     return;
   }
 
@@ -129,7 +152,53 @@ function removeFromRoom(socket){
   }
 
   sendRoomUpdate(room);
+
 }
+
+/* =========================
+   TEAM ASSIGNMENT
+========================= */
+
+function assignTeams(room){
+
+  const ids=[
+    ...room.players
+  ];
+
+  ids.forEach(
+    (id,index)=>{
+
+      const player=
+        players.get(id);
+
+      if(!player){
+        return;
+      }
+
+      if(room.mode==="1v1"){
+
+        player.team=
+          index===0
+          ?"A"
+          :"B";
+
+      }else{
+
+        player.team=
+          index<2
+          ?"A"
+          :"B";
+
+      }
+
+    }
+  );
+
+}
+
+/* =========================
+   START MATCH
+========================= */
 
 function startMatch(room){
 
@@ -141,7 +210,6 @@ function startMatch(room){
     room.players.size !==
     room.maxPlayers
   ){
-
     return;
   }
 
@@ -149,11 +217,12 @@ function startMatch(room){
     room.ready.size !==
     room.maxPlayers
   ){
-
     return;
   }
 
   room.started=true;
+
+  assignTeams(room);
 
   let index=0;
 
@@ -164,10 +233,9 @@ function startMatch(room){
     const player=
       players.get(id);
 
-    if(!player)continue;
-
-    player.alive=true;
-    player.hp=100;
+    if(!player){
+      continue;
+    }
 
     const spawn=
       spawnPoints[
@@ -177,58 +245,110 @@ function startMatch(room){
 
     player.x=spawn.x;
     player.z=spawn.z;
+    player.hp=100;
+    player.alive=true;
 
     index++;
 
   }
 
-  io.to(room.id).emit(
-    "matchStart",
-    {
-      mode:room.mode,
-      players:[
-        ...room.players
-      ]
-      .map(id=>
-        players.get(id)
-      )
-      .filter(Boolean)
-    }
-  );
+  for(
+    const id of room.players
+  ){
+
+    const player=
+      players.get(id);
+
+    io.to(id).emit(
+      "matchStart",
+      {
+        mode:room.mode,
+        myTeam:player.team,
+        players:[
+          ...room.players
+        ]
+        .map(
+          pid=>
+            players.get(pid)
+        )
+        .filter(Boolean)
+      }
+    );
+
+  }
+
+}
+
+/* =========================
+   CHECK TEAM WINNER
+========================= */
+
+function checkWinner(room){
+
+  const aliveTeams=
+    new Set();
 
   for(
     const id of room.players
   ){
 
-    io.to(id).emit(
-      "playerMoved",
-      players.get(id)
-    );
+    const player=
+      players.get(id);
+
+    if(
+      player &&
+      player.alive
+    ){
+
+      aliveTeams.add(
+        player.team
+      );
+
+    }
 
   }
+
+  if(
+    aliveTeams.size<=1
+  ){
+
+    const winnerTeam=
+      aliveTeams.size===1
+      ?[...aliveTeams][0]
+      :null;
+
+    io.to(room.id).emit(
+      "matchEnd",
+      {
+        winnerTeam
+      }
+    );
+
+    room.started=false;
+    room.ready.clear();
+
+  }
+
 }
+
+/* =========================
+   CONNECTION
+========================= */
 
 io.on(
   "connection",
   socket=>{
 
-    const spawn=
-      spawnPoints[
-        Math.floor(
-          Math.random()*
-          spawnPoints.length
-        )
-      ];
-
     players.set(
       socket.id,
       {
         id:socket.id,
-        x:spawn.x,
+        x:0,
         y:0,
-        z:spawn.z,
+        z:0,
         hp:100,
-        alive:true
+        alive:true,
+        team:null
       }
     );
 
@@ -259,7 +379,7 @@ io.on(
         );
 
         const room=
-          getRoom(mode);
+          findRoom(mode);
 
         room.players.add(
           socket.id
@@ -272,9 +392,7 @@ io.on(
           room.id
         );
 
-        sendRoomUpdate(
-          room
-        );
+        sendRoomUpdate(room);
 
       }
     );
@@ -292,7 +410,15 @@ io.on(
             socket.roomId
           );
 
-        if(!room)return;
+        if(!room){
+          return;
+        }
+
+        if(
+          room.started
+        ){
+          return;
+        }
 
         if(isReady){
 
@@ -308,24 +434,25 @@ io.on(
 
         }
 
-        sendRoomUpdate(
-          room
-        );
+        sendRoomUpdate(room);
 
-        startMatch(
-          room
-        );
+        startMatch(room);
 
       }
     );
 
     /* =====================
-       MOVE
+       MOVEMENT
     ===================== */
 
     socket.on(
       "move",
       data=>{
+
+        const room=
+          rooms.get(
+            socket.roomId
+          );
 
         const player=
           players.get(
@@ -333,21 +460,10 @@ io.on(
           );
 
         if(
+          !room ||
+          !room.started ||
           !player ||
           !player.alive
-        ){
-
-          return;
-        }
-
-        const room=
-          rooms.get(
-            socket.roomId
-          );
-
-        if(
-          !room ||
-          !room.started
         ){
 
           return;
@@ -431,7 +547,6 @@ io.on(
           if(
             id===socket.id
           ){
-
             continue;
           }
 
@@ -441,6 +556,17 @@ io.on(
           if(
             !candidate ||
             !candidate.alive
+          ){
+            continue;
+          }
+
+          /*
+            FRIENDLY FIRE OFF
+          */
+
+          if(
+            candidate.team===
+            shooter.team
           ){
 
             continue;
@@ -469,11 +595,14 @@ io.on(
             target=candidate;
 
           }
+
         }
 
         if(!target){
           return;
         }
+
+        /* DAMAGE */
 
         target.hp=
           Math.max(
@@ -502,9 +631,7 @@ io.on(
           !target.alive
         ){
 
-          checkWinner(
-            room
-          );
+          checkWinner(room);
 
         }
 
@@ -512,20 +639,21 @@ io.on(
     );
 
     /* =====================
-       RELOAD / SWITCH
-       Reserved for future
-       server-authoritative
-       weapon inventory.
+       RESERVED ACTIONS
     ===================== */
 
     socket.on(
       "reload",
-      ()=>{}
+      ()=>{
+        /* Future server-side reload */
+      }
     );
 
     socket.on(
       "switchWeapon",
-      ()=>{}
+      ()=>{
+        /* Future server-side weapon switch */
+      }
     );
 
     /* =====================
@@ -536,6 +664,11 @@ io.on(
       "disconnect",
       ()=>{
 
+        const room=
+          rooms.get(
+            socket.roomId
+          );
+
         removeFromRoom(
           socket
         );
@@ -544,46 +677,24 @@ io.on(
           socket.id
         );
 
+        if(
+          room &&
+          room.started
+        ){
+
+          checkWinner(room);
+
+        }
+
       }
     );
 
   }
 );
 
-function checkWinner(room){
-
-  const alive=
-    [...room.players]
-    .filter(
-      id=>{
-        const p=
-          players.get(id);
-
-        return p &&
-          p.alive;
-      }
-    );
-
-  if(
-    alive.length===1
-  ){
-
-    const winner=
-      alive[0];
-
-    io.to(room.id).emit(
-      "matchEnd",
-      {
-        winner
-      }
-    );
-
-    room.started=false;
-    room.ready.clear();
-
-  }
-
-}
+/* =========================
+   SERVER
+========================= */
 
 const PORT=
   process.env.PORT || 3000;
@@ -592,7 +703,7 @@ server.listen(
   PORT,
   ()=>{
     console.log(
-      `Server running on port ${PORT}`
+      `Chittorgarh server running on port ${PORT}`
     );
   }
 );
