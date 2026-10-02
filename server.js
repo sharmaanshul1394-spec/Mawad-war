@@ -14,9 +14,11 @@ app.use(
   express.static("public")
 );
 
-const players = new Map();
+const players =
+  new Map();
 
 const spawnPoints = [
+
   { x: -45, z: -30 },
   { x: 35, z: -25 },
   { x: -30, z: 35 },
@@ -25,6 +27,7 @@ const spawnPoints = [
   { x: -45, z: 5 },
   { x: 45, z: 5 },
   { x: 0, z: 45 }
+
 ];
 
 io.on(
@@ -40,12 +43,19 @@ io.on(
       ];
 
     const player = {
+
       id: socket.id,
+
       x: spawn.x,
+
       y: 0,
+
       z: spawn.z,
+
       hp: 100,
+
       alive: true
+
     };
 
     players.set(
@@ -72,16 +82,18 @@ io.on(
       "move",
       data => {
 
-        const current =
+        const player =
           players.get(
             socket.id
           );
 
-        if (
-          !current ||
-          !current.alive
-        ) {
+        if(
+          !player ||
+          !player.alive
+        ){
+
           return;
+
         }
 
         const x =
@@ -90,29 +102,38 @@ io.on(
         const z =
           Number(data.z);
 
-        if (
+        if(
           !Number.isFinite(x) ||
           !Number.isFinite(z)
-        ) {
+        ){
+
           return;
+
         }
 
-        current.x =
+        player.x =
           Math.max(
             -62,
-            Math.min(62, x)
+            Math.min(
+              62,
+              x
+            )
           );
 
-        current.z =
+        player.z =
           Math.max(
             -62,
-            Math.min(62, z)
+            Math.min(
+              62,
+              z
+            )
           );
 
         io.emit(
           "playerMoved",
-          current
+          player
         );
+
       }
     );
 
@@ -130,13 +151,15 @@ io.on(
             targetId
           );
 
-        if (
+        if(
           !shooter ||
           !target ||
           !shooter.alive ||
           !target.alive
-        ) {
+        ){
+
           return;
+
         }
 
         const dx =
@@ -149,34 +172,41 @@ io.on(
 
         const distance =
           Math.sqrt(
-            dx * dx +
-            dz * dz
+            dx*dx+
+            dz*dz
           );
 
-        if (distance > 30) {
+        if(
+          distance>30
+        ){
+
           return;
+
         }
 
         target.hp =
           Math.max(
             0,
-            target.hp - 25
+            target.hp-25
           );
 
-        if (
-          target.hp === 0
-        ) {
-          target.alive = false;
+        if(
+          target.hp===0
+        ){
+
+          target.alive=false;
+
         }
 
         io.emit(
           "playerHit",
           {
-            id: target.id,
-            hp: target.hp,
-            alive: target.alive
+            id:target.id,
+            hp:target.hp,
+            alive:target.alive
           }
         );
+
       }
     );
 
@@ -192,8 +222,10 @@ io.on(
           "playerLeft",
           socket.id
         );
+
       }
     );
+
   }
 );
 
@@ -203,8 +235,10 @@ const PORT =
 server.listen(
   PORT,
   () => {
+
     console.log(
       `Server running on port ${PORT}`
     );
+
   }
 );
