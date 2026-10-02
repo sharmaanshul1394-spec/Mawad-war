@@ -2,7 +2,9 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport"
+content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+
 <title>Chittorgarh Battle Royale - Phase 11</title>
 
 <style>
@@ -10,6 +12,7 @@
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
 }
+
 html,body{
   margin:0;
   width:100%;
@@ -19,11 +22,16 @@ html,body{
   font-family:Arial,sans-serif;
   touch-action:none;
 }
-canvas{display:block}
+
+canvas{
+  display:block;
+}
+
 button{
   font:inherit;
   user-select:none;
 }
+
 #menu{
   position:fixed;
   inset:0;
@@ -32,8 +40,11 @@ button{
   align-items:center;
   justify-content:center;
   color:white;
-  background:linear-gradient(#20170dcc,#000f);
+  background:
+    radial-gradient(circle at 50% 30%,#65452288,#000d),
+    linear-gradient(#20170d,#000);
 }
+
 #menuBox{
   width:min(92%,410px);
   padding:25px;
@@ -42,7 +53,13 @@ button{
   text-align:center;
   box-shadow:0 20px 60px #000;
 }
-.modeButton,#readyButton{
+
+#menuBox h1{
+  margin-top:0;
+}
+
+.modeButton,
+#readyButton{
   width:100%;
   padding:15px;
   margin:7px 0;
@@ -52,13 +69,21 @@ button{
   background:#795126;
   font-weight:bold;
 }
-.modeButton.selected{background:#b9782d}
-#readyButton{background:#1877d2}
+
+.modeButton.selected{
+  background:#b9782d;
+}
+
+#readyButton{
+  background:#1877d2;
+}
+
 #roomInfo{
   margin:15px 0;
   line-height:1.6;
   color:#ddd;
 }
+
 #hud{
   position:fixed;
   inset:0;
@@ -67,6 +92,7 @@ button{
   color:white;
   pointer-events:none;
 }
+
 #title{
   position:absolute;
   top:10px;
@@ -74,6 +100,7 @@ button{
   font-weight:bold;
   text-shadow:0 2px 5px #000;
 }
+
 #status{
   position:absolute;
   top:37px;
@@ -81,6 +108,7 @@ button{
   font-size:13px;
   text-shadow:0 2px 5px #000;
 }
+
 #team{
   position:absolute;
   top:58px;
@@ -88,6 +116,7 @@ button{
   font-weight:bold;
   text-shadow:0 2px 5px #000;
 }
+
 #weapon{
   position:absolute;
   top:10px;
@@ -95,10 +124,12 @@ button{
   text-align:right;
   text-shadow:0 2px 5px #000;
 }
+
 #ammo{
   font-size:24px;
   font-weight:bold;
 }
+
 #health{
   position:absolute;
   left:18px;
@@ -108,6 +139,7 @@ button{
   background:#000c;
   font-weight:bold;
 }
+
 #crosshair{
   position:absolute;
   left:50%;
@@ -116,18 +148,29 @@ button{
   height:25px;
   transform:translate(-50%,-50%);
 }
-#crosshair:before,#crosshair:after{
+
+#crosshair:before,
+#crosshair:after{
   content:"";
   position:absolute;
   background:white;
   box-shadow:0 0 4px #000;
 }
+
 #crosshair:before{
-  width:24px;height:2px;left:1px;top:12px;
+  width:24px;
+  height:2px;
+  left:1px;
+  top:12px;
 }
+
 #crosshair:after{
-  width:2px;height:24px;left:12px;top:1px;
+  width:2px;
+  height:24px;
+  left:12px;
+  top:1px;
 }
+
 #joystick{
   position:absolute;
   left:20px;
@@ -139,6 +182,7 @@ button{
   background:#ffffff10;
   pointer-events:auto;
 }
+
 #stick{
   position:absolute;
   left:33px;
@@ -148,6 +192,7 @@ button{
   border-radius:50%;
   background:#ffffffbb;
 }
+
 .action{
   position:absolute;
   right:22px;
@@ -160,6 +205,7 @@ button{
   pointer-events:auto;
   background:#222c;
 }
+
 #fire{
   bottom:22px;
   width:92px;
@@ -167,15 +213,24 @@ button{
   border-radius:50%;
   background:#c52626dd;
 }
-#reload{bottom:125px}
-#switch{bottom:193px}
+
+#reload{
+  bottom:125px;
+}
+
+#switch{
+  bottom:193px;
+}
+
 #damageFlash{
   position:absolute;
   inset:0;
   background:#f00;
   opacity:0;
   pointer-events:none;
+  transition:opacity .08s;
 }
+
 #message{
   position:absolute;
   left:50%;
@@ -189,6 +244,7 @@ button{
   display:none;
   pointer-events:auto;
 }
+
 #message button{
   margin-top:18px;
   padding:12px 22px;
@@ -204,34 +260,64 @@ button{
 <body>
 
 <div id="menu">
+
   <div id="menuBox">
+
     <h1>🏰 Chittorgarh</h1>
     <p>Fort Battle Online</p>
 
-    <button class="modeButton" data-mode="1v1">⚔️ 1 VS 1</button>
-    <button class="modeButton" data-mode="2v2">👥 2 VS 2</button>
+    <button class="modeButton"
+            data-mode="1v1">
+      ⚔️ 1 VS 1
+    </button>
+
+    <button class="modeButton"
+            data-mode="2v2">
+      👥 2 VS 2
+    </button>
 
     <div id="roomInfo">
       Mode: Select a mode<br>
       Players: 0
     </div>
 
-    <button id="readyButton">READY</button>
+    <button id="readyButton">
+      READY
+    </button>
+
   </div>
+
 </div>
 
 <div id="hud">
-  <div id="title">🏰 CHITTORGARH FORT</div>
-  <div id="status">Waiting...</div>
-  <div id="team">Team: -</div>
+
+  <div id="title">
+    🏰 CHITTORGARH FORT
+  </div>
+
+  <div id="status">
+    Waiting...
+  </div>
+
+  <div id="team">
+    Team: -
+  </div>
 
   <div id="weapon">
-    <div id="weaponName">Pistol</div>
-    <div id="ammo">12 / 60</div>
+
+    <div id="weaponName">
+      Pistol
+    </div>
+
+    <div id="ammo">
+      12 / 60
+    </div>
+
   </div>
 
   <div id="health">
-    ❤️ HP: <span id="hp">100</span>
+    ❤️ HP:
+    <span id="hp">100</span>
   </div>
 
   <div id="crosshair"></div>
@@ -240,12 +326,28 @@ button{
     <div id="stick"></div>
   </div>
 
-  <button id="fire" class="action">FIRE</button>
-  <button id="reload" class="action">RELOAD</button>
-  <button id="switch" class="action">SWITCH</button>
+  <button
+    id="fire"
+    class="action">
+    FIRE
+  </button>
+
+  <button
+    id="reload"
+    class="action">
+    RELOAD
+  </button>
+
+  <button
+    id="switch"
+    class="action">
+    SWITCH
+  </button>
 
   <div id="damageFlash"></div>
+
   <div id="message"></div>
+
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -267,10 +369,6 @@ let myHP=100;
 const players=new Map();
 const collisionObjects=[];
 
-/* =====================================================
-   AUDIO
-===================================================== */
-
 let audioContext=null;
 
 function initAudio(){
@@ -279,140 +377,139 @@ function initAudio(){
 
     audioContext=
       new (
-        window.AudioContext||
+        window.AudioContext ||
         window.webkitAudioContext
       )();
 
   }
 
-  if(audioContext.state==="suspended")
+  if(audioContext.state==="suspended"){
     audioContext.resume();
-
+  }
 }
 
-function sound(
-  type
-){
+function sound(type){
 
-  initAudio();
+  try{
+    initAudio();
 
-  const ctx=audioContext;
+    const ctx=audioContext;
 
-  const osc=
-    ctx.createOscillator();
+    const osc=ctx.createOscillator();
+    const gain=ctx.createGain();
 
-  const gain=
-    ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
 
-  osc.connect(gain);
-  gain.connect(ctx.destination);
+    const now=ctx.currentTime;
 
-  const now=ctx.currentTime;
+    if(type==="footstep"){
 
-  if(type==="footstep"){
+      osc.type="triangle";
 
-    osc.type="triangle";
-    osc.frequency.setValueAtTime(
-      85,now
-    );
+      osc.frequency.setValueAtTime(
+        85,now
+      );
 
-    gain.gain.setValueAtTime(
-      .0001,now
-    );
+      gain.gain.setValueAtTime(
+        .0001,now
+      );
 
-    gain.gain.exponentialRampToValueAtTime(
-      .045,now+.01
-    );
+      gain.gain.exponentialRampToValueAtTime(
+        .045,now+.01
+      );
 
-    gain.gain.exponentialRampToValueAtTime(
-      .0001,now+.08
-    );
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,now+.08
+      );
 
-    osc.start(now);
-    osc.stop(now+.09);
+      osc.start(now);
+      osc.stop(now+.09);
+    }
 
+    if(type==="hit"){
+
+      osc.type="square";
+
+      osc.frequency.setValueAtTime(
+        620,now
+      );
+
+      osc.frequency.exponentialRampToValueAtTime(
+        180,now+.11
+      );
+
+      gain.gain.setValueAtTime(
+        .0001,now
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .08,now+.01
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,now+.12
+      );
+
+      osc.start(now);
+      osc.stop(now+.13);
+    }
+
+    if(type==="reload"){
+
+      osc.type="sine";
+
+      osc.frequency.setValueAtTime(
+        320,now
+      );
+
+      gain.gain.setValueAtTime(
+        .0001,now
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .05,now+.02
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,now+.18
+      );
+
+      osc.start(now);
+      osc.stop(now+.2);
+    }
+
+    if(type==="shoot"){
+
+      osc.type="sawtooth";
+
+      osc.frequency.setValueAtTime(
+        100,now
+      );
+
+      osc.frequency.exponentialRampToValueAtTime(
+        42,now+.08
+      );
+
+      gain.gain.setValueAtTime(
+        .0001,now
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .16,now+.005
+      );
+
+      gain.gain.exponentialRampToValueAtTime(
+        .0001,now+.09
+      );
+
+      osc.start(now);
+      osc.stop(now+.1);
+    }
+
+  }catch(error){
+    console.log("Audio error:",error);
   }
-
-  if(type==="hit"){
-
-    osc.type="square";
-    osc.frequency.setValueAtTime(
-      620,now
-    );
-
-    osc.frequency.exponentialRampToValueAtTime(
-      180,now+.11
-    );
-
-    gain.gain.setValueAtTime(
-      .0001,now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .08,now+.01
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .0001,now+.12
-    );
-
-    osc.start(now);
-    osc.stop(now+.13);
-
-  }
-
-  if(type==="reload"){
-
-    osc.type="sine";
-    osc.frequency.setValueAtTime(
-      320,now
-    );
-
-    gain.gain.setValueAtTime(
-      .0001,now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .05,now+.02
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .0001,now+.18
-    );
-
-    osc.start(now);
-    osc.stop(now+.2);
-
-  }
-
-  if(type==="shoot"){
-
-    osc.type="sawtooth";
-    osc.frequency.setValueAtTime(
-      100,now
-    );
-
-    osc.frequency.exponentialRampToValueAtTime(
-      42,now+.08
-    );
-
-    gain.gain.setValueAtTime(
-      .0001,now
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .16,now+.005
-    );
-
-    gain.gain.exponentialRampToValueAtTime(
-      .0001,now+.09
-    );
-
-    osc.start(now);
-    osc.stop(now+.1);
-
-  }
-
 }
 
 /* =====================================================
@@ -449,21 +546,21 @@ document.getElementById("hp");
 const damageFlash=
 document.getElementById("damageFlash");
 
-document.querySelectorAll(
-  ".modeButton"
-).forEach(button=>{
+document
+.querySelectorAll(".modeButton")
+.forEach(button=>{
 
   button.addEventListener(
     "click",
     ()=>{
 
-      document.querySelectorAll(
-        ".modeButton"
-      ).forEach(b=>
+      document
+      .querySelectorAll(".modeButton")
+      .forEach(b=>{
         b.classList.remove(
           "selected"
-        )
-      );
+        );
+      });
 
       button.classList.add(
         "selected"
@@ -482,6 +579,8 @@ document.querySelectorAll(
         selectedMode
       );
 
+      statusText.textContent=
+        "Finding players...";
     }
   );
 
@@ -512,7 +611,6 @@ readyButton.addEventListener(
       ready
       ?"CANCEL READY"
       :"READY";
-
   }
 );
 
@@ -524,12 +622,14 @@ const scene=
 new THREE.Scene();
 
 scene.background=
-new THREE.Color(0x91a9b5);
+new THREE.Color(
+  0x91a9b5
+);
 
 scene.fog=
 new THREE.Fog(
   0x91a9b5,
-  85,
+  90,
   210
 );
 
@@ -556,10 +656,14 @@ renderer.setSize(
 );
 
 renderer.setPixelRatio(
-  Math.min(devicePixelRatio,2)
+  Math.min(
+    window.devicePixelRatio,
+    2
+  )
 );
 
 renderer.shadowMap.enabled=true;
+
 renderer.shadowMap.type=
 THREE.PCFSoftShadowMap;
 
@@ -589,7 +693,9 @@ new THREE.DirectionalLight(
 );
 
 sun.position.set(
-  -50,100,50
+  -50,
+  100,
+  50
 );
 
 sun.castShadow=true;
@@ -635,12 +741,6 @@ new THREE.MeshStandardMaterial({
   roughness:1
 });
 
-const roadMat=
-new THREE.MeshStandardMaterial({
-  color:0x655743,
-  roughness:1
-});
-
 const grassMat=
 new THREE.MeshStandardMaterial({
   color:0x4d5d38,
@@ -658,12 +758,12 @@ function addBox(
 ){
 
   const mesh=
-  new THREE.Mesh(
-    new THREE.BoxGeometry(
-      w,h,d
-    ),
-    material
-  );
+    new THREE.Mesh(
+      new THREE.BoxGeometry(
+        w,h,d
+      ),
+      material
+    );
 
   mesh.position.set(
     x,
@@ -684,27 +784,32 @@ function addBox(
       minZ:z-d/2,
       maxZ:z+d/2
     });
-
   }
 
   return mesh;
 }
 
 function addCylinder(
-  x,y,z,r,h,material,
+  x,y,z,r,h,
+  material,
   collision=true
 ){
 
   const mesh=
-  new THREE.Mesh(
-    new THREE.CylinderGeometry(
-      r,r*1.08,h,16
-    ),
-    material
-  );
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        r,
+        r*1.08,
+        h,
+        16
+      ),
+      material
+    );
 
   mesh.position.set(
-    x,y+h/2,z
+    x,
+    y+h/2,
+    z
   );
 
   mesh.castShadow=true;
@@ -720,7 +825,6 @@ function addCylinder(
       minZ:z-r,
       maxZ:z+r
     });
-
   }
 
   return mesh;
@@ -731,15 +835,19 @@ function roof(
 ){
 
   const mesh=
-  new THREE.Mesh(
-    new THREE.ConeGeometry(
-      r,h,8
-    ),
-    material
-  );
+    new THREE.Mesh(
+      new THREE.ConeGeometry(
+        r,
+        h,
+        8
+      ),
+      material
+    );
 
   mesh.position.set(
-    x,y+h/2,z
+    x,
+    y+h/2,
+    z
   );
 
   mesh.castShadow=true;
@@ -750,25 +858,30 @@ function roof(
 }
 
 /* =====================================================
-   GROUND / FORT
+   GROUND
 ===================================================== */
 
 const ground=
 new THREE.Mesh(
   new THREE.CylinderGeometry(
-    76,82,4,64
+    76,
+    82,
+    4,
+    64
   ),
   groundMat
 );
 
 ground.position.y=-2;
 ground.receiveShadow=true;
+
 scene.add(ground);
 
 const outside=
 new THREE.Mesh(
   new THREE.CircleGeometry(
-    170,64
+    170,
+    64
   ),
   grassMat
 );
@@ -776,11 +889,14 @@ new THREE.Mesh(
 outside.rotation.x=
 -Math.PI/2;
 
-outside.position.y=-4.2;
+outside.position.y=
+-4.2;
 
 scene.add(outside);
 
-/* outer walls */
+/* =====================================================
+   OUTER FORT WALLS
+===================================================== */
 
 addBox(
   0,0,-72,
@@ -806,9 +922,15 @@ addBox(
   sandstone
 );
 
-/* battlements */
+/* =====================================================
+   BATTLEMENTS
+===================================================== */
 
-for(let x=-68;x<=68;x+=7){
+for(
+  let x=-68;
+  x<=68;
+  x+=7
+){
 
   addBox(
     x,8,-72,
@@ -821,10 +943,13 @@ for(let x=-68;x<=68;x+=7){
     4,2.5,3,
     darkStone
   );
-
 }
 
-for(let z=-68;z<=68;z+=7){
+for(
+  let z=-68;
+  z<=68;
+  z+=7
+){
 
   addBox(
     -72,8,z,
@@ -837,13 +962,365 @@ for(let z=-68;z<=68;z+=7){
     3,2.5,4,
     darkStone
   );
-
 }
 
-/* gates */
+/* =====================================================
+   GATES
+===================================================== */
 
 function gateNS(z){
 
   addBox(
+    -36,0,z,
+    67,8,5,
+    sandstone
+  );
+
+  addBox(
+    36,0,z,
+    67,8,5,
+    sandstone
+  );
+
+  addBox(
     -10,0,z,
-    52
+    15,10,7,
+    sandstone
+  );
+
+  addBox(
+    10,0,z,
+    15,10,7,
+    sandstone
+  );
+
+  addBox(
+    0,8,z,
+    24,4,7,
+    sandstone,
+    false
+  );
+
+}
+
+function gateEW(x){
+
+  addBox(
+    x,0,-36,
+    5,8,67,
+    sandstone
+  );
+
+  addBox(
+    x,0,36,
+    5,8,67,
+    sandstone
+  );
+
+  addBox(
+    x,0,-10,
+    7,10,15,
+    sandstone
+  );
+
+  addBox(
+    x,0,10,
+    7,10,15,
+    sandstone
+  );
+
+  addBox(
+    x,8,0,
+    7,4,24,
+    sandstone,
+    false
+  );
+}
+
+gateNS(-72);
+gateNS(72);
+gateEW(-72);
+gateEW(72);
+
+/* =====================================================
+   BUILDINGS / MAHAL
+===================================================== */
+
+function building(
+  x,z,w,d,h
+){
+
+  addBox(
+    x,0,z,
+    w,h,d,
+    palaceMat
+  );
+
+  addBox(
+    x,h,z,
+    w+1,1.2,d+1,
+    roofMat,
+    false
+  );
+
+  /* entrance */
+
+  addBox(
+    x,
+    0,
+    z-d/2-.2,
+    3.5,
+    5,
+    .8,
+    darkStone,
+    false
+  );
+}
+
+building(
+  -30,-28,
+  27,19,13
+);
+
+building(
+  30,-28,
+  25,19,12
+);
+
+building(
+  -30,29,
+  27,19,12
+);
+
+building(
+  30,29,
+  27,19,12
+);
+
+building(
+  0,0,
+  22,20,11
+);
+
+/* =====================================================
+   INNER WALLS
+===================================================== */
+
+addBox(
+  -14,0,-15,
+  3,7,18,
+  darkStone
+);
+
+addBox(
+  14,0,15,
+  3,7,18,
+  darkStone
+);
+
+addBox(
+  -35,0,5,
+  18,6,3,
+  darkStone
+);
+
+addBox(
+  35,0,-5,
+  18,6,3,
+  darkStone
+);
+
+/* =====================================================
+   TOWERS
+===================================================== */
+
+function tallTower(x,z){
+
+  addCylinder(
+    x,0,z,
+    4,
+    10,
+    sandstone
+  );
+
+  roof(
+    x,
+    10,
+    z,
+    5,
+    4,
+    roofMat
+  );
+}
+
+[
+  [-55,-55],
+  [55,-55],
+  [-55,55],
+  [55,55],
+  [-55,0],
+  [55,0],
+  [0,-55],
+  [0,55]
+].forEach(
+  p=>tallTower(
+    p[0],
+    p[1]
+  )
+);
+
+/* =====================================================
+   TREES
+===================================================== */
+
+function tree(
+  x,z,s=1
+){
+
+  const trunk=
+    new THREE.Mesh(
+      new THREE.CylinderGeometry(
+        .35*s,
+        .45*s,
+        3*s,
+        10
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x55351f
+      })
+    );
+
+  trunk.position.set(
+    x,
+    1.5*s,
+    z
+  );
+
+  trunk.castShadow=true;
+
+  scene.add(trunk);
+
+  const leaves=
+    new THREE.Mesh(
+      new THREE.SphereGeometry(
+        2.1*s,
+        12,
+        10
+      ),
+      new THREE.MeshStandardMaterial({
+        color:0x405a32
+      })
+    );
+
+  leaves.position.set(
+    x,
+    4*s,
+    z
+  );
+
+  leaves.castShadow=true;
+
+  scene.add(leaves);
+}
+
+[
+  [-55,-30],
+  [-50,-20],
+  [50,35],
+  [55,44],
+  [-43,44],
+  [43,-42],
+  [-12,-48],
+  [14,-48]
+].forEach(
+  p=>tree(
+    p[0],
+    p[1],
+    .9
+  )
+);
+
+/* =====================================================
+   WEAPONS
+===================================================== */
+
+function createWeapon(type){
+
+  const group=
+    new THREE.Group();
+
+  const dark=
+    new THREE.MeshStandardMaterial({
+      color:0x151719,
+      metalness:.75,
+      roughness:.25
+    });
+
+  const metal=
+    new THREE.MeshStandardMaterial({
+      color:0x464b50,
+      metalness:.9,
+      roughness:.18
+    });
+
+  const wood=
+    new THREE.MeshStandardMaterial({
+      color:0x503321,
+      roughness:.7
+    });
+
+  if(type==="Pistol"){
+
+    const slide=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .22,.22,.9
+        ),
+        metal
+      );
+
+    slide.position.z=-.35;
+
+    group.add(slide);
+
+    const grip=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .18,.55,.2
+        ),
+        dark
+      );
+
+    grip.position.set(
+      0,-.28,.05
+    );
+
+    grip.rotation.x=.2;
+
+    group.add(grip);
+  }
+
+  if(type==="Rifle"){
+
+    const body=
+      new THREE.Mesh(
+        new THREE.BoxGeometry(
+          .25,.25,1.3
+        ),
+        dark
+      );
+
+    body.position.z=-.25;
+
+    group.add(body);
+
+    const barrel=
+      new THREE.Mesh(
+        new THREE.CylinderGeometry(
+          .045,
+          .045,
+          1.1,
+          10
+        ),
+        metal
+      );
