@@ -2,12 +2,12 @@ import express from "express";
 import http from "http";
 import { Server } from "socket.io";
 
-const app = express();
+const app=express();
 
-const server =
+const server=
   http.createServer(app);
 
-const io =
+const io=
   new Server(server);
 
 app.use(
@@ -15,31 +15,129 @@ app.use(
 );
 
 /* =========================
-   DATA
+   WEAPONS
 ========================= */
 
-const players = new Map();
-const rooms = new Map();
+const WEAPONS={
 
-const spawnPoints = [
-  { x:-45, z:-30 },
-  { x:45, z:30 },
-  { x:-45, z:30 },
-  { x:45, z:-30 }
+  Pistol:{
+    damage:25,
+    range:30,
+    magazineSize:12,
+    reserveStart:60,
+    fireDelay:350,
+    reloadTime:900
+  },
+
+  Rifle:{
+    damage:18,
+    range:45,
+    magazineSize:30,
+    reserveStart:120,
+    fireDelay:110,
+    reloadTime:1300
+  },
+
+  Shotgun:{
+    damage:15,
+    pellets:6,
+    range:18,
+    magazineSize:6,
+    reserveStart:36,
+    fireDelay:800,
+    reloadTime:1500
+  }
+
+};
+
+const weaponList=[
+  "Pistol",
+  "Rifle",
+  "Shotgun"
 ];
 
-const modes = {
-  "1v1": 2,
-  "2v2": 4
+/* =========================
+   GAME DATA
+========================= */
+
+const players=new Map();
+const rooms=new Map();
+
+const spawnPoints=[
+  {x:-45,z:-30},
+  {x:45,z:30},
+  {x:-45,z:30},
+  {x:45,z:-30}
+];
+
+const modes={
+  "1v1":2,
+  "2v2":4
 };
 
 /* =========================
-   ROOM
+   HELPERS
+========================= */
+
+function makeWeapons(){
+
+  const weapons={};
+
+  for(
+    const name of weaponList
+  ){
+
+    const w=WEAPONS[name];
+
+    weapons[name]={
+      magazine:w.magazineSize,
+      reserve:w.reserveStart
+    };
+
+  }
+
+  return weapons;
+}
+
+function currentWeapon(player){
+
+  return WEAPONS[
+    player.weapon
+  ];
+}
+
+function sendWeaponState(socket){
+
+  const player=
+    players.get(socket.id);
+
+  if(!player){
+    return;
+  }
+
+  const w=
+    player.weapons[
+      player.weapon
+    ];
+
+  socket.emit(
+    "weaponState",
+    {
+      weapon:player.weapon,
+      magazine:w.magazine,
+      reserve:w.reserve
+    }
+  );
+
+}
+
+/* =========================
+   ROOMS
 ========================= */
 
 function createRoom(mode){
 
-  const room = {
+  const room={
 
     id:
       `${mode}-${Date.now()}-${Math.random()
@@ -88,10 +186,6 @@ function findRoom(mode){
   return createRoom(mode);
 }
 
-/* =========================
-   ROOM UPDATE
-========================= */
-
 function sendRoomUpdate(room){
 
   io.to(room.id).emit(
@@ -107,7 +201,7 @@ function sendRoomUpdate(room){
 }
 
 /* =========================
-   REMOVE FROM ROOM
+   REMOVE ROOM
 ========================= */
 
 function removeFromRoom(socket){
@@ -149,6 +243,7 @@ function removeFromRoom(socket){
     );
 
     return;
+
   }
 
   sendRoomUpdate(room);
@@ -156,7 +251,7 @@ function removeFromRoom(socket){
 }
 
 /* =========================
-   TEAM ASSIGNMENT
+   TEAMS
 ========================= */
 
 function assignTeams(room){
@@ -175,21 +270,10 @@ function assignTeams(room){
         return;
       }
 
-      if(room.mode==="1v1"){
-
-        player.team=
-          index===0
-          ?"A"
-          :"B";
-
-      }else{
-
-        player.team=
-          index<2
-          ?"A"
-          :"B";
-
-      }
+      player.team=
+        room.mode==="1v1"
+        ?(index===0?"A":"B")
+        :(index<2?"A":"B");
 
     }
   );
@@ -197,7 +281,7 @@ function assignTeams(room){
 }
 
 /* =========================
-   START MATCH
+   START
 ========================= */
 
 function startMatch(room){
@@ -247,6 +331,12 @@ function startMatch(room){
     player.z=spawn.z;
     player.hp=100;
     player.alive=true;
+    player.reloading=false;
+    player.lastShot=0;
+
+    player.weapon="Pistol";
+    player.weapons=
+      makeWeapons();
 
     index++;
 
@@ -264,6 +354,7 @@ function startMatch(room){
       {
         mode:room.mode,
         myTeam:player.team,
+
         players:[
           ...room.players
         ]
@@ -272,7 +363,12 @@ function startMatch(room){
             players.get(pid)
         )
         .filter(Boolean)
+
       }
+    );
+
+    sendWeaponState(
+      io.sockets.sockets.get(id)
     );
 
   }
@@ -280,7 +376,7 @@ function startMatch(room){
 }
 
 /* =========================
-   CHECK TEAM WINNER
+   WINNER
 ========================= */
 
 function checkWinner(room){
@@ -332,6 +428,298 @@ function checkWinner(room){
 }
 
 /* =========================
+   SHOOT
+========================= */
+
+function shoot(socket){
+
+  const player=
+    players.get(
+      socket.id
+    );
+
+  const room=
+    rooms.get(
+      socket.roomId
+    );
+
+  if(
+    !player ||
+    !room ||
+    !room.started ||
+    !player.alive ||
+    player.reloading
+  ){
+
+    return;
+  }
+
+  const now=Date.now();
+
+  const weapon=
+    currentWeapon(player);
+
+  if(
+    now-player.lastShot<
+    weapon.fireDelay
+  ){
+
+    return;
+  }
+
+  const ammo=
+    player.weapons[
+      player.weapon
+    ];
+
+  if(
+    ammo.magazine<=0
+  ){
+
+    sendWeaponState(socket);
+
+    return;
+  }
+
+  player.lastShot=now;
+
+  ammo.magazine--;
+
+  let target=null;
+  let closest=Infinity;
+
+  for(
+    const id of room.players
+  ){
+
+    if(
+      id===socket.id
+    ){
+      continue;
+    }
+
+    const enemy=
+      players.get(id);
+
+    if(
+      !enemy ||
+      !enemy.alive
+    ){
+      continue;
+    }
+
+    /* Friendly fire OFF */
+
+    if(
+      enemy.team===
+      player.team
+    ){
+      continue;
+    }
+
+    const dx=
+      player.x-enemy.x;
+
+    const dz=
+      player.z-enemy.z;
+
+    const distance=
+      Math.hypot(dx,dz);
+
+    if(
+      distance<=weapon.range &&
+      distance<closest
+    ){
+
+      closest=distance;
+      target=enemy;
+
+    }
+
+  }
+
+  if(target){
+
+    let damage=
+      weapon.damage;
+
+    if(
+      player.weapon===
+      "Shotgun"
+    ){
+
+      damage=
+        weapon.damage*
+        weapon.pellets;
+
+    }
+
+    target.hp=
+      Math.max(
+        0,
+        target.hp-damage
+      );
+
+    if(
+      target.hp===0
+    ){
+
+      target.alive=false;
+
+    }
+
+    io.to(room.id).emit(
+      "playerHit",
+      {
+        id:target.id,
+        hp:target.hp,
+        alive:target.alive
+      }
+    );
+
+    if(
+      !target.alive
+    ){
+
+      checkWinner(room);
+
+    }
+
+  }
+
+  sendWeaponState(socket);
+
+}
+
+/* =========================
+   RELOAD
+========================= */
+
+function reload(socket){
+
+  const player=
+    players.get(
+      socket.id
+    );
+
+  if(
+    !player ||
+    !player.alive ||
+    player.reloading
+  ){
+    return;
+  }
+
+  const weapon=
+    currentWeapon(player);
+
+  const ammo=
+    player.weapons[
+      player.weapon
+    ];
+
+  if(
+    ammo.magazine>=
+    weapon.magazineSize
+  ){
+    return;
+  }
+
+  if(
+    ammo.reserve<=0
+  ){
+    return;
+  }
+
+  player.reloading=true;
+
+  setTimeout(
+    ()=>{
+
+      if(
+        !players.has(
+          socket.id
+        )
+      ){
+        return;
+      }
+
+      const p=
+        players.get(
+          socket.id
+        );
+
+      if(!p){
+        return;
+      }
+
+      const w=
+        currentWeapon(p);
+
+      const a=
+        p.weapons[
+          p.weapon
+        ];
+
+      const needed=
+        w.magazineSize-
+        a.magazine;
+
+      const amount=
+        Math.min(
+          needed,
+          a.reserve
+        );
+
+      a.magazine+=amount;
+      a.reserve-=amount;
+
+      p.reloading=false;
+
+      sendWeaponState(socket);
+
+    },
+    weapon.reloadTime
+  );
+
+}
+
+/* =========================
+   SWITCH WEAPON
+========================= */
+
+function switchWeapon(socket){
+
+  const player=
+    players.get(
+      socket.id
+    );
+
+  if(
+    !player ||
+    !player.alive ||
+    player.reloading
+  ){
+    return;
+  }
+
+  const current=
+    weaponList.indexOf(
+      player.weapon
+    );
+
+  const next=
+    (current+1)%
+    weaponList.length;
+
+  player.weapon=
+    weaponList[next];
+
+  sendWeaponState(socket);
+
+}
+
+/* =========================
    CONNECTION
 ========================= */
 
@@ -343,12 +731,21 @@ io.on(
       socket.id,
       {
         id:socket.id,
+
         x:0,
         y:0,
         z:0,
+
         hp:100,
         alive:true,
-        team:null
+
+        team:null,
+
+        weapon:"Pistol",
+        weapons:makeWeapons(),
+
+        lastShot:0,
+        reloading:false
       }
     );
 
@@ -359,24 +756,17 @@ io.on(
       }
     );
 
-    /* =====================
-       SELECT MODE
-    ===================== */
+    /* MODE */
 
     socket.on(
       "selectMode",
       mode=>{
 
-        if(
-          !modes[mode]
-        ){
-
+        if(!modes[mode]){
           return;
         }
 
-        removeFromRoom(
-          socket
-        );
+        removeFromRoom(socket);
 
         const room=
           findRoom(mode);
@@ -397,9 +787,7 @@ io.on(
       }
     );
 
-    /* =====================
-       READY
-    ===================== */
+    /* READY */
 
     socket.on(
       "ready",
@@ -410,11 +798,8 @@ io.on(
             socket.roomId
           );
 
-        if(!room){
-          return;
-        }
-
         if(
+          !room ||
           room.started
         ){
           return;
@@ -441,9 +826,7 @@ io.on(
       }
     );
 
-    /* =====================
-       MOVEMENT
-    ===================== */
+    /* MOVE */
 
     socket.on(
       "move",
@@ -465,7 +848,6 @@ io.on(
           !player ||
           !player.alive
         ){
-
           return;
         }
 
@@ -479,7 +861,6 @@ io.on(
           !Number.isFinite(x) ||
           !Number.isFinite(z)
         ){
-
           return;
         }
 
@@ -509,156 +890,30 @@ io.on(
       }
     );
 
-    /* =====================
-       SHOOT
-    ===================== */
+    /* WEAPONS */
 
     socket.on(
       "shoot",
       ()=>{
-
-        const room=
-          rooms.get(
-            socket.roomId
-          );
-
-        const shooter=
-          players.get(
-            socket.id
-          );
-
-        if(
-          !room ||
-          !room.started ||
-          !shooter ||
-          !shooter.alive
-        ){
-
-          return;
-        }
-
-        let target=null;
-        let closest=Infinity;
-
-        for(
-          const id of room.players
-        ){
-
-          if(
-            id===socket.id
-          ){
-            continue;
-          }
-
-          const candidate=
-            players.get(id);
-
-          if(
-            !candidate ||
-            !candidate.alive
-          ){
-            continue;
-          }
-
-          /*
-            FRIENDLY FIRE OFF
-          */
-
-          if(
-            candidate.team===
-            shooter.team
-          ){
-
-            continue;
-          }
-
-          const dx=
-            shooter.x-
-            candidate.x;
-
-          const dz=
-            shooter.z-
-            candidate.z;
-
-          const distance=
-            Math.sqrt(
-              dx*dx+
-              dz*dz
-            );
-
-          if(
-            distance<=30 &&
-            distance<closest
-          ){
-
-            closest=distance;
-            target=candidate;
-
-          }
-
-        }
-
-        if(!target){
-          return;
-        }
-
-        /* DAMAGE */
-
-        target.hp=
-          Math.max(
-            0,
-            target.hp-25
-          );
-
-        if(
-          target.hp===0
-        ){
-
-          target.alive=false;
-
-        }
-
-        io.to(room.id).emit(
-          "playerHit",
-          {
-            id:target.id,
-            hp:target.hp,
-            alive:target.alive
-          }
-        );
-
-        if(
-          !target.alive
-        ){
-
-          checkWinner(room);
-
-        }
-
+        shoot(socket);
       }
     );
-
-    /* =====================
-       RESERVED ACTIONS
-    ===================== */
 
     socket.on(
       "reload",
       ()=>{
-        /* Future server-side reload */
+        reload(socket);
       }
     );
 
     socket.on(
       "switchWeapon",
       ()=>{
-        /* Future server-side weapon switch */
+        switchWeapon(socket);
       }
     );
 
-    /* =====================
-       DISCONNECT
-    ===================== */
+    /* DISCONNECT */
 
     socket.on(
       "disconnect",
@@ -669,9 +924,7 @@ io.on(
             socket.roomId
           );
 
-        removeFromRoom(
-          socket
-        );
+        removeFromRoom(socket);
 
         players.delete(
           socket.id
