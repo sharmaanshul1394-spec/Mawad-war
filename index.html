@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Chittorgarh Battle Royale</title>
+<title>Chittorgarh Battle Royale - Phase 11</title>
 
 <style>
 *{
   box-sizing:border-box;
   -webkit-tap-highlight-color:transparent;
 }
-
 html,body{
   margin:0;
   width:100%;
@@ -20,16 +19,11 @@ html,body{
   font-family:Arial,sans-serif;
   touch-action:none;
 }
-
-canvas{
-  display:block;
-}
-
+canvas{display:block}
 button{
   font:inherit;
   user-select:none;
 }
-
 #menu{
   position:fixed;
   inset:0;
@@ -40,7 +34,6 @@ button{
   color:white;
   background:linear-gradient(#20170dcc,#000f);
 }
-
 #menuBox{
   width:min(92%,410px);
   padding:25px;
@@ -49,13 +42,7 @@ button{
   text-align:center;
   box-shadow:0 20px 60px #000;
 }
-
-#menuBox h1{
-  margin:0 0 8px;
-}
-
-.modeButton,
-#readyButton{
+.modeButton,#readyButton{
   width:100%;
   padding:15px;
   margin:7px 0;
@@ -65,22 +52,13 @@ button{
   background:#795126;
   font-weight:bold;
 }
-
-.modeButton.selected{
-  background:#b9782d;
-  box-shadow:0 0 0 2px #fff8;
-}
-
-#readyButton{
-  background:#1877d2;
-}
-
+.modeButton.selected{background:#b9782d}
+#readyButton{background:#1877d2}
 #roomInfo{
   margin:15px 0;
   line-height:1.6;
   color:#ddd;
 }
-
 #hud{
   position:fixed;
   inset:0;
@@ -89,7 +67,6 @@ button{
   color:white;
   pointer-events:none;
 }
-
 #title{
   position:absolute;
   top:10px;
@@ -97,7 +74,6 @@ button{
   font-weight:bold;
   text-shadow:0 2px 5px #000;
 }
-
 #status{
   position:absolute;
   top:37px;
@@ -105,7 +81,6 @@ button{
   font-size:13px;
   text-shadow:0 2px 5px #000;
 }
-
 #team{
   position:absolute;
   top:58px;
@@ -113,7 +88,6 @@ button{
   font-weight:bold;
   text-shadow:0 2px 5px #000;
 }
-
 #weapon{
   position:absolute;
   top:10px;
@@ -121,12 +95,10 @@ button{
   text-align:right;
   text-shadow:0 2px 5px #000;
 }
-
 #ammo{
   font-size:24px;
   font-weight:bold;
 }
-
 #health{
   position:absolute;
   left:18px;
@@ -136,7 +108,6 @@ button{
   background:#000c;
   font-weight:bold;
 }
-
 #crosshair{
   position:absolute;
   left:50%;
@@ -145,29 +116,18 @@ button{
   height:25px;
   transform:translate(-50%,-50%);
 }
-
-#crosshair:before,
-#crosshair:after{
+#crosshair:before,#crosshair:after{
   content:"";
   position:absolute;
   background:white;
   box-shadow:0 0 4px #000;
 }
-
 #crosshair:before{
-  width:24px;
-  height:2px;
-  left:1px;
-  top:12px;
+  width:24px;height:2px;left:1px;top:12px;
 }
-
 #crosshair:after{
-  width:2px;
-  height:24px;
-  left:12px;
-  top:1px;
+  width:2px;height:24px;left:12px;top:1px;
 }
-
 #joystick{
   position:absolute;
   left:20px;
@@ -179,7 +139,6 @@ button{
   background:#ffffff10;
   pointer-events:auto;
 }
-
 #stick{
   position:absolute;
   left:33px;
@@ -189,7 +148,6 @@ button{
   border-radius:50%;
   background:#ffffffbb;
 }
-
 .action{
   position:absolute;
   right:22px;
@@ -202,7 +160,6 @@ button{
   pointer-events:auto;
   background:#222c;
 }
-
 #fire{
   bottom:22px;
   width:92px;
@@ -210,15 +167,15 @@ button{
   border-radius:50%;
   background:#c52626dd;
 }
-
-#reload{
-  bottom:125px;
+#reload{bottom:125px}
+#switch{bottom:193px}
+#damageFlash{
+  position:absolute;
+  inset:0;
+  background:#f00;
+  opacity:0;
+  pointer-events:none;
 }
-
-#switch{
-  bottom:193px;
-}
-
 #message{
   position:absolute;
   left:50%;
@@ -232,7 +189,6 @@ button{
   display:none;
   pointer-events:auto;
 }
-
 #message button{
   margin-top:18px;
   padding:12px 22px;
@@ -242,14 +198,6 @@ button{
   color:white;
   font-weight:bold;
 }
-
-#damageFlash{
-  position:absolute;
-  inset:0;
-  background:#f00;
-  opacity:0;
-  pointer-events:none;
-}
 </style>
 </head>
 
@@ -257,36 +205,24 @@ button{
 
 <div id="menu">
   <div id="menuBox">
-
     <h1>🏰 Chittorgarh</h1>
     <p>Fort Battle Online</p>
 
-    <button class="modeButton" data-mode="1v1">
-      ⚔️ 1 VS 1
-    </button>
-
-    <button class="modeButton" data-mode="2v2">
-      👥 2 VS 2
-    </button>
+    <button class="modeButton" data-mode="1v1">⚔️ 1 VS 1</button>
+    <button class="modeButton" data-mode="2v2">👥 2 VS 2</button>
 
     <div id="roomInfo">
       Mode: Select a mode<br>
       Players: 0
     </div>
 
-    <button id="readyButton">
-      READY
-    </button>
-
+    <button id="readyButton">READY</button>
   </div>
 </div>
 
 <div id="hud">
-
   <div id="title">🏰 CHITTORGARH FORT</div>
-
   <div id="status">Waiting...</div>
-
   <div id="team">Team: -</div>
 
   <div id="weapon">
@@ -310,7 +246,6 @@ button{
 
   <div id="damageFlash"></div>
   <div id="message"></div>
-
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -320,32 +255,595 @@ button{
 import * as THREE from
 "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
+const socket=io();
+
+let myId=null;
+let myTeam=null;
+let selectedMode=null;
+let ready=false;
+let gameStarted=false;
+let myHP=100;
+
+const players=new Map();
+const collisionObjects=[];
+
 /* =====================================================
-   SOCKET / STATE
+   AUDIO
 ===================================================== */
 
-const socket = io();
+let audioContext=null;
 
-let myId = null;
-let myTeam = null;
-let selectedMode = null;
-let ready = false;
-let gameStarted = false;
-let myHP = 100;
+function initAudio(){
 
-const players = new Map();
+  if(!audioContext){
 
-const collisionObjects = [];
+    audioContext=
+      new (
+        window.AudioContext||
+        window.webkitAudioContext
+      )();
 
-const doors = [];
+  }
+
+  if(audioContext.state==="suspended")
+    audioContext.resume();
+
+}
+
+function sound(
+  type
+){
+
+  initAudio();
+
+  const ctx=audioContext;
+
+  const osc=
+    ctx.createOscillator();
+
+  const gain=
+    ctx.createGain();
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  const now=ctx.currentTime;
+
+  if(type==="footstep"){
+
+    osc.type="triangle";
+    osc.frequency.setValueAtTime(
+      85,now
+    );
+
+    gain.gain.setValueAtTime(
+      .0001,now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .045,now+.01
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .0001,now+.08
+    );
+
+    osc.start(now);
+    osc.stop(now+.09);
+
+  }
+
+  if(type==="hit"){
+
+    osc.type="square";
+    osc.frequency.setValueAtTime(
+      620,now
+    );
+
+    osc.frequency.exponentialRampToValueAtTime(
+      180,now+.11
+    );
+
+    gain.gain.setValueAtTime(
+      .0001,now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .08,now+.01
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .0001,now+.12
+    );
+
+    osc.start(now);
+    osc.stop(now+.13);
+
+  }
+
+  if(type==="reload"){
+
+    osc.type="sine";
+    osc.frequency.setValueAtTime(
+      320,now
+    );
+
+    gain.gain.setValueAtTime(
+      .0001,now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .05,now+.02
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .0001,now+.18
+    );
+
+    osc.start(now);
+    osc.stop(now+.2);
+
+  }
+
+  if(type==="shoot"){
+
+    osc.type="sawtooth";
+    osc.frequency.setValueAtTime(
+      100,now
+    );
+
+    osc.frequency.exponentialRampToValueAtTime(
+      42,now+.08
+    );
+
+    gain.gain.setValueAtTime(
+      .0001,now
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .16,now+.005
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+      .0001,now+.09
+    );
+
+    osc.start(now);
+    osc.stop(now+.1);
+
+  }
+
+}
 
 /* =====================================================
    UI
 ===================================================== */
 
-const menu = document.getElementById("menu");
-const hud = document.getElementById("hud");
-const roomInfo = document.getElementById("roomInfo");
-const readyButton = document.getElementById("readyButton");
-const statusText = document.getElementById("status");
-const
+const menu=
+document.getElementById("menu");
+
+const hud=
+document.getElementById("hud");
+
+const roomInfo=
+document.getElementById("roomInfo");
+
+const readyButton=
+document.getElementById("readyButton");
+
+const statusText=
+document.getElementById("status");
+
+const teamText=
+document.getElementById("team");
+
+const weaponName=
+document.getElementById("weaponName");
+
+const ammoText=
+document.getElementById("ammo");
+
+const hpText=
+document.getElementById("hp");
+
+const damageFlash=
+document.getElementById("damageFlash");
+
+document.querySelectorAll(
+  ".modeButton"
+).forEach(button=>{
+
+  button.addEventListener(
+    "click",
+    ()=>{
+
+      document.querySelectorAll(
+        ".modeButton"
+      ).forEach(b=>
+        b.classList.remove(
+          "selected"
+        )
+      );
+
+      button.classList.add(
+        "selected"
+      );
+
+      selectedMode=
+        button.dataset.mode;
+
+      ready=false;
+
+      readyButton.textContent=
+        "READY";
+
+      socket.emit(
+        "selectMode",
+        selectedMode
+      );
+
+    }
+  );
+
+});
+
+readyButton.addEventListener(
+  "click",
+  ()=>{
+
+    initAudio();
+
+    if(!selectedMode){
+
+      roomInfo.innerHTML=
+        "⚠️ Pehle mode select karo.";
+
+      return;
+    }
+
+    ready=!ready;
+
+    socket.emit(
+      "ready",
+      ready
+    );
+
+    readyButton.textContent=
+      ready
+      ?"CANCEL READY"
+      :"READY";
+
+  }
+);
+
+/* =====================================================
+   THREE
+===================================================== */
+
+const scene=
+new THREE.Scene();
+
+scene.background=
+new THREE.Color(0x91a9b5);
+
+scene.fog=
+new THREE.Fog(
+  0x91a9b5,
+  85,
+  210
+);
+
+const camera=
+new THREE.PerspectiveCamera(
+  65,
+  innerWidth/innerHeight,
+  .1,
+  350
+);
+
+camera.position.set(
+  0,7,15
+);
+
+const renderer=
+new THREE.WebGLRenderer({
+  antialias:true
+});
+
+renderer.setSize(
+  innerWidth,
+  innerHeight
+);
+
+renderer.setPixelRatio(
+  Math.min(devicePixelRatio,2)
+);
+
+renderer.shadowMap.enabled=true;
+renderer.shadowMap.type=
+THREE.PCFSoftShadowMap;
+
+renderer.outputColorSpace=
+THREE.SRGBColorSpace;
+
+document.body.appendChild(
+  renderer.domElement
+);
+
+/* =====================================================
+   LIGHT
+===================================================== */
+
+scene.add(
+  new THREE.HemisphereLight(
+    0xffefd0,
+    0x40382c,
+    2
+  )
+);
+
+const sun=
+new THREE.DirectionalLight(
+  0xffdfa5,
+  3.2
+);
+
+sun.position.set(
+  -50,100,50
+);
+
+sun.castShadow=true;
+
+sun.shadow.mapSize.set(
+  2048,
+  2048
+);
+
+scene.add(sun);
+
+/* =====================================================
+   MATERIALS
+===================================================== */
+
+const groundMat=
+new THREE.MeshStandardMaterial({
+  color:0x796548,
+  roughness:1
+});
+
+const sandstone=
+new THREE.MeshStandardMaterial({
+  color:0x99744d,
+  roughness:.95
+});
+
+const darkStone=
+new THREE.MeshStandardMaterial({
+  color:0x62503c,
+  roughness:1
+});
+
+const palaceMat=
+new THREE.MeshStandardMaterial({
+  color:0xb18a5b,
+  roughness:.9
+});
+
+const roofMat=
+new THREE.MeshStandardMaterial({
+  color:0x65472f,
+  roughness:1
+});
+
+const roadMat=
+new THREE.MeshStandardMaterial({
+  color:0x655743,
+  roughness:1
+});
+
+const grassMat=
+new THREE.MeshStandardMaterial({
+  color:0x4d5d38,
+  roughness:1
+});
+
+/* =====================================================
+   MAP HELPERS
+===================================================== */
+
+function addBox(
+  x,y,z,w,h,d,
+  material,
+  collision=true
+){
+
+  const mesh=
+  new THREE.Mesh(
+    new THREE.BoxGeometry(
+      w,h,d
+    ),
+    material
+  );
+
+  mesh.position.set(
+    x,
+    y+h/2,
+    z
+  );
+
+  mesh.castShadow=true;
+  mesh.receiveShadow=true;
+
+  scene.add(mesh);
+
+  if(collision){
+
+    collisionObjects.push({
+      minX:x-w/2,
+      maxX:x+w/2,
+      minZ:z-d/2,
+      maxZ:z+d/2
+    });
+
+  }
+
+  return mesh;
+}
+
+function addCylinder(
+  x,y,z,r,h,material,
+  collision=true
+){
+
+  const mesh=
+  new THREE.Mesh(
+    new THREE.CylinderGeometry(
+      r,r*1.08,h,16
+    ),
+    material
+  );
+
+  mesh.position.set(
+    x,y+h/2,z
+  );
+
+  mesh.castShadow=true;
+  mesh.receiveShadow=true;
+
+  scene.add(mesh);
+
+  if(collision){
+
+    collisionObjects.push({
+      minX:x-r,
+      maxX:x+r,
+      minZ:z-r,
+      maxZ:z+r
+    });
+
+  }
+
+  return mesh;
+}
+
+function roof(
+  x,y,z,r,h,material
+){
+
+  const mesh=
+  new THREE.Mesh(
+    new THREE.ConeGeometry(
+      r,h,8
+    ),
+    material
+  );
+
+  mesh.position.set(
+    x,y+h/2,z
+  );
+
+  mesh.castShadow=true;
+
+  scene.add(mesh);
+
+  return mesh;
+}
+
+/* =====================================================
+   GROUND / FORT
+===================================================== */
+
+const ground=
+new THREE.Mesh(
+  new THREE.CylinderGeometry(
+    76,82,4,64
+  ),
+  groundMat
+);
+
+ground.position.y=-2;
+ground.receiveShadow=true;
+scene.add(ground);
+
+const outside=
+new THREE.Mesh(
+  new THREE.CircleGeometry(
+    170,64
+  ),
+  grassMat
+);
+
+outside.rotation.x=
+-Math.PI/2;
+
+outside.position.y=-4.2;
+
+scene.add(outside);
+
+/* outer walls */
+
+addBox(
+  0,0,-72,
+  145,8,5,
+  sandstone
+);
+
+addBox(
+  0,0,72,
+  145,8,5,
+  sandstone
+);
+
+addBox(
+  -72,0,0,
+  5,8,145,
+  sandstone
+);
+
+addBox(
+  72,0,0,
+  5,8,145,
+  sandstone
+);
+
+/* battlements */
+
+for(let x=-68;x<=68;x+=7){
+
+  addBox(
+    x,8,-72,
+    4,2.5,3,
+    darkStone
+  );
+
+  addBox(
+    x,8,72,
+    4,2.5,3,
+    darkStone
+  );
+
+}
+
+for(let z=-68;z<=68;z+=7){
+
+  addBox(
+    -72,8,z,
+    3,2.5,4,
+    darkStone
+  );
+
+  addBox(
+    72,8,z,
+    3,2.5,4,
+    darkStone
+  );
+
+}
+
+/* gates */
+
+function gateNS(z){
+
+  addBox(
+    -10,0,z,
+    52
