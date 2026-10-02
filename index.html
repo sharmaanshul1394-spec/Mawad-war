@@ -2,13 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-
-<meta name="viewport"
-content="width=device-width,
-initial-scale=1.0,
-maximum-scale=1.0,
-user-scalable=no">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Chittorgarh Battle Royale</title>
 
 <style>
@@ -34,63 +28,95 @@ canvas{
 #hud{
   position:fixed;
   inset:0;
-  pointer-events:none;
   color:white;
+  pointer-events:none;
 }
 
 #title{
   position:absolute;
-  top:12px;
-  left:12px;
-  font-size:18px;
+  top:10px;
+  left:10px;
+  font-size:17px;
   font-weight:bold;
   text-shadow:0 2px 5px #000;
 }
 
 #status{
   position:absolute;
-  top:40px;
-  left:12px;
+  top:38px;
+  left:10px;
   font-size:13px;
-  text-shadow:0 2px 5px #000;
-}
-
-#weapon{
-  position:absolute;
-  top:65px;
-  left:12px;
-  font-size:14px;
   text-shadow:0 2px 5px #000;
 }
 
 #health{
   position:absolute;
-  left:20px;
-  bottom:22px;
-  padding:10px 15px;
-  border-radius:12px;
-  background:rgba(0,0,0,.65);
-  font-weight:bold;
+  bottom:20px;
+  left:18px;
+  padding:9px 13px;
+  background:#000b;
+  border-radius:10px;
+}
+
+#weaponInfo{
+  position:absolute;
+  right:15px;
+  bottom:125px;
+  padding:10px;
+  background:#000b;
+  border-radius:10px;
+  text-align:right;
 }
 
 #zone{
   position:absolute;
-  right:15px;
-  top:15px;
-  padding:8px 12px;
+  top:12px;
+  right:12px;
+  padding:8px 10px;
+  background:#000b;
   border-radius:10px;
-  background:rgba(0,0,0,.6);
+}
+
+#crosshair{
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%,-50%);
+  width:22px;
+  height:22px;
+}
+
+#crosshair:before,
+#crosshair:after{
+  content:"";
+  position:absolute;
+  background:white;
+  box-shadow:0 0 3px black;
+}
+
+#crosshair:before{
+  width:22px;
+  height:2px;
+  top:10px;
+  left:0;
+}
+
+#crosshair:after{
+  width:2px;
+  height:22px;
+  top:0;
+  left:10px;
 }
 
 #joystick{
   position:absolute;
-  left:22px;
-  bottom:22px;
+  left:20px;
+  bottom:20px;
   width:115px;
   height:115px;
-  border:2px solid rgba(255,255,255,.45);
+  border:2px solid #ffffff66;
   border-radius:50%;
-  background:rgba(255,255,255,.08);
+  background:#ffffff10;
   pointer-events:auto;
 }
 
@@ -101,35 +127,55 @@ canvas{
   width:50px;
   height:50px;
   border-radius:50%;
-  background:rgba(255,255,255,.7);
+  background:#ffffffbb;
+}
+
+.action{
+  position:absolute;
+  right:25px;
+  width:78px;
+  height:58px;
+  border:2px solid white;
+  border-radius:15px;
+  color:white;
+  font-weight:bold;
+  pointer-events:auto;
 }
 
 #fire{
-  position:absolute;
-  right:25px;
-  bottom:35px;
-  width:82px;
-  height:82px;
+  bottom:30px;
   border-radius:50%;
-  border:2px solid white;
-  background:rgba(200,30,30,.75);
-  color:white;
-  font-weight:bold;
-  pointer-events:auto;
+  width:84px;
+  height:84px;
+  background:#c62828cc;
+}
+
+#reload{
+  bottom:125px;
+  background:#444c;
 }
 
 #pickup{
-  position:absolute;
-  right:30px;
-  bottom:130px;
-  padding:12px 18px;
-  border:0;
-  border-radius:12px;
-  background:#d79b25;
-  color:white;
-  font-weight:bold;
+  bottom:195px;
+  background:#b57a20dd;
   display:none;
-  pointer-events:auto;
+}
+
+#weaponSelect{
+  bottom:265px;
+  background:#333c;
+}
+
+#message{
+  position:absolute;
+  left:50%;
+  top:35%;
+  transform:translate(-50%,-50%);
+  font-size:30px;
+  font-weight:bold;
+  text-align:center;
+  text-shadow:0 3px 8px #000;
+  display:none;
 }
 </style>
 </head>
@@ -138,242 +184,46 @@ canvas{
 
 <div id="hud">
 
-<div id="title">
-🏰 CHITTORGARH BATTLE ROYALE
-</div>
+  <div id="title">
+    🏰 CHITTORGARH BATTLE ROYALE
+  </div>
 
-<div id="status">
-Connecting...
-</div>
+  <div id="status">
+    Connecting...
+  </div>
 
-<div id="weapon">
-🔫 Weapon: None
-</div>
+  <div id="zone">
+    ⭕ SAFE ZONE
+  </div>
 
-<div id="zone">
-⭕ Zone: 100%
-</div>
+  <div id="health">
+    ❤️ HP: <span id="hp">100</span>
+  </div>
 
-<div id="health">
-❤️ HP: <span id="hp">100</span>
-</div>
+  <div id="weaponInfo">
+    🔫 <span id="weapon">Pistol</span><br>
+    <span id="ammo">12 / 60</span>
+  </div>
 
-<div id="joystick">
-<div id="stick"></div>
-</div>
+  <div id="crosshair"></div>
 
-<button id="fire">
-FIRE
-</button>
+  <div id="message"></div>
 
-<button id="pickup">
-🎒 PICK UP
-</button>
+  <div id="joystick">
+    <div id="stick"></div>
+  </div>
 
-</div>
+  <button
+    id="fire"
+    class="action">
+    FIRE
+  </button>
 
-<script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
+  <button
+    id="reload"
+    class="action">
+    RELOAD
+  </button>
 
-<script type="module">
-
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
-
-const socket=io();
-
-const scene=new THREE.Scene();
-
-scene.background=
-new THREE.Color(0x87a9bd);
-
-scene.fog=
-new THREE.Fog(
-0x87a9bd,
-80,
-180
-);
-
-const camera=
-new THREE.PerspectiveCamera(
-65,
-innerWidth/innerHeight,
-0.1,
-300
-);
-
-const renderer=
-new THREE.WebGLRenderer({
-antialias:true
-});
-
-renderer.setSize(
-innerWidth,
-innerHeight
-);
-
-renderer.shadowMap.enabled=true;
-
-document.body.appendChild(
-renderer.domElement
-);
-
-/* LIGHT */
-
-scene.add(
-new THREE.HemisphereLight(
-0xffffff,
-0x665544,
-2
-)
-);
-
-const sun=
-new THREE.DirectionalLight(
-0xffffff,
-3
-);
-
-sun.position.set(
-40,
-80,
-20
-);
-
-sun.castShadow=true;
-
-scene.add(sun);
-
-/* GROUND */
-
-const ground=
-new THREE.Mesh(
-new THREE.CylinderGeometry(
-75,75,3,64
-),
-new THREE.MeshStandardMaterial({
-color:0x806b52
-})
-);
-
-ground.position.y=-1.5;
-
-ground.receiveShadow=true;
-
-scene.add(ground);
-
-/* BUILDINGS */
-
-function building(
-x,
-z,
-w,
-h,
-d,
-color=0x92785b
-){
-
-const mesh=
-new THREE.Mesh(
-new THREE.BoxGeometry(
-w,h,d
-),
-new THREE.MeshStandardMaterial({
-color
-})
-);
-
-mesh.position.set(
-x,
-h/2,
-z
-);
-
-mesh.castShadow=true;
-mesh.receiveShadow=true;
-
-scene.add(mesh);
-
-}
-
-/* FORT WALLS */
-
-building(
-0,-70,150,8,6
-);
-
-building(
-0,70,150,8,6
-);
-
-building(
--70,0,6,8,140
-);
-
-building(
-70,0,6,8,140
-);
-
-/* MAHALS */
-
-building(
--30,-25,
-24,16,22,
-0x92785b
-);
-
-building(
-30,-22,
-20,13,20,
-0x9b805d
-);
-
-/* VIJAY STAMBH */
-
-building(
--20,25,
-12,26,12,
-0xa18458
-);
-
-/* KIRTI STAMBH */
-
-building(
-23,25,
-9,18,9,
-0xa18458
-);
-
-/* TEMPLE */
-
-building(
-0,5,
-20,8,16,
-0x8c7358
-);
-
-/* SMALL BUILDINGS */
-
-for(
-let i=0;
-i<18;
-i++
-){
-
-let x=
-Math.random()*110-55;
-
-let z=
-Math.random()*110-55;
-
-building(
-x,z,
-5,3,5,
-0x707650
-);
-
-}
-
-/* SAFE ZONE */
-
-const zoneGeometry=
-new THREE.RingGeometry(
+  <button
+    id="pickup
